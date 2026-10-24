@@ -1,0 +1,76 @@
+:root {
+  --ink: #17213a;
+  --muted: #748097;
+  --line: #e7edf5;
+  --mint: #8db8ff;
+  --system-blue: #1559e8;
+  --system-blue-dark: #0a3d9d;
+  --system-pale: #f3f6fc;
+}
+
+body { color: var(--ink); background: #f7f9fd; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-color: #5d9aff; }
+.public-layout { background: #fff; }
+.public-page h1, .registration-main h1, .checkout-card h1, .confirmation-card h1, .payment-result-card h1 { color: #17213a; }
+
+/* Shared brand accents for public event discovery and attendee flows. */
+.events-intro .eyebrow, .events-intro h1 em, .discovery-card__date, .discovery-card__foot a,
+.event-back, .event-about .eyebrow, .event-ticket-card .eyebrow, .event-program>.eyebrow,
+.event-program-list article>div>strong, .event-ticket-card .ticket-option>span,
+.registration-back, .registration-main>.eyebrow, .registration-ticket__price,
+.registration-summary .eyebrow, .registration-error a, .checkout-back, .checkout-card .eyebrow,
+.confirmation-back, .confirmation-card .eyebrow, .payment-result-card .eyebrow,
+.payment-result-retry, .ticket-back {
+  color: var(--system-blue);
+}
+.event-info-icon { color: var(--system-blue); background: #edf3ff; }
+.event-detail-hero { background-color: #123d9a; background-image: linear-gradient(125deg,#123d9a,#347bf3 66%,#92baff); }
+.event-ticket-card, .registration-summary, .checkout-card, .confirmation-card, .payment-result-card, .ticket-card, .ticket-error,
+.password-reset-card, .staff-login-card { border-color: #e3eaf5; box-shadow: 0 16px 48px #173a7610; }
+.registration-ticket.selected { border-color: #79a9ff; background: #f4f8ff; }
+.registration-ticket.selected .registration-ticket__radio { border-color: var(--system-blue); }
+.registration-field input:focus, .staff-login-card input:focus, .password-reset-card input:focus { border-color: #78a9ff; box-shadow: 0 0 0 3px #1559e81a; outline: 0; }
+.registration-summary .eyebrow, .checkout-card .eyebrow, .confirmation-card .eyebrow, .payment-result-card .eyebrow { color: var(--system-blue); }
+.registration-code-card { border-color: #d4e2ff; background: #f3f7ff; }
+.registration-code-card strong { color: #1749a8; }
+.confirmation-symbol { background: #2874ee; }
+.checkout-state { background: #eff5ff; color: #1749a8; }
+.payment-result-mark.success { background: #e8f1ff; color: #1749a8; }
+.payment-result-reference { border-color: #e3eaf5; background: #f7f9fd; }
+.ticket-card>header { background: linear-gradient(120deg,#103d9a,#1765e9); }
+.ticket-qr svg { border-color: #e1e9f8; }
+
+/* Admin and staff pages keep their operational layouts with the same blue brand. */
+.admin-shell, .staff-layout { background: #f3f6fc; color: #17213a; }
+.admin-topbar, .admin-content { color: #17213a; }
+.admin-topbar { border-color: #e5ebf5; }
+.admin-breadcrumb strong, .page-heading h1, .shared-page-header h1 { color: #17213a; }
+.eyebrow, .shared-page-header__description { color: #748097; }
+.button--dark { background: var(--system-blue); color: #fff; }
+.button--dark:hover { background: #0e49c4; }
+.button--quiet { border-color: #dfe7f4; color: #34425f; }
+.button--quiet:hover { background: #f3f6fc; }
+.admin-sidebar { background: #101b31; }
+.admin-sidebar .brand-mark { background: #1559e8; color: #fff; }
+.sidebar-link.is-active { background: #1c3157; box-shadow: inset 2px 0 #5794ff; }
+.sidebar-link.is-active .sidebar-link__icon { color: #93baff; }
+.scope-dot { background: #65a0ff; }
+.admin-content a:not(.button):not([class*="badge"]):not([class*="status"]),
+.staff-layout main a:not(.button):not([class*="badge"]):not([class*="status"]) { color: #1559e8; }
+.admin-content a:not(.button):not([class*="badge"]):not([class*="status"]):hover,
+.staff-layout main a:not(.button):not([class*="badge"]):not([class*="status"]):hover { color: #0b43b4; }
+.admin-content input:focus, .admin-content select:focus, .admin-content textarea:focus,
+.staff-layout input:focus, .staff-layout select:focus, .staff-layout textarea:focus { border-color: #78a9ff; box-shadow: 0 0 0 3px #1559e81a; outline: 0; }
+.admin-content table thead, .staff-layout table thead { background: #f4f7fc; }
+.admin-content table th, .staff-layout table th { color: #65728b; }
+.dashboard-page { --dash-ink: #17213a; --dash-muted: #748097; --dash-line: #e5ebf5; --dash-green: #1559e8; }
+.dashboard-welcome { border-color: #dce7fa; background: linear-gradient(118deg,#eaf1ff 0%,#f7f9fd 67%,#edf4ff 100%); }
+.welcome-kicker, .section-kicker { color: #1559e8; }
+.staff-nav { border-color: #e5ebf5; }
+.staff-nav .brand-mark { background: #1559e8; }
+.staff-layout main { color: #17213a; }
+
+@media (max-width: 700px) {
+  .admin-shell { min-width: 320px; }
+  .admin-content { background: #f3f6fc; }
+}

@@ -1,0 +1,3 @@
+﻿import './ConfirmDialog.css';
+type Props = { title: string; message: string; confirmLabel?: string; onConfirm: () => void; onCancel: () => void };
+export default function ConfirmDialog({ title, message, confirmLabel = 'Confirm', onConfirm, onCancel }: Props) { return <div className="dialog-backdrop"><section className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title"><h2 id="dialog-title">{title}</h2><p>{message}</p><div><button className="button button--quiet" onClick={onCancel}>Cancel</button><button className="button button--dark" onClick={onConfirm}>{confirmLabel}</button></div></section></div>; }

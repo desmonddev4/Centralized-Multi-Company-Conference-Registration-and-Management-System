@@ -1,0 +1,21 @@
+﻿import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import PublicLayout from '../../components/layout/PublicLayout';
+import LoadingState from '../../components/feedback/LoadingState';
+import { eventsApi, type Conference } from '../../api/events';
+import './EventDetailPage.css';
+
+export default function EventDetailPage() {
+  const { eventId = '' } = useParams();
+  const [event, setEvent] = useState<Conference | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  useEffect(() => { setLoading(true); eventsApi.get(eventId).then(setEvent).catch((cause) => setError(cause instanceof Error ? cause.message : 'This conference could not be found.')).finally(() => setLoading(false)); }, [eventId]);
+  const date = event ? new Intl.DateTimeFormat(undefined, { weekday:'long', day:'numeric', month:'long', year:'numeric' }).format(new Date(event.starts_at)) : '';
+  const time = event ? new Intl.DateTimeFormat(undefined, { hour:'numeric', minute:'2-digit' }).format(new Date(event.starts_at)) : '';
+  return <PublicLayout>{loading?<div className="event-detail-loading"><LoadingState label="Loading conference"/></div>:!event?<main className="event-detail-error"><p className="eyebrow">CONFERENCE</p><h1>We couldn’t find that event.</h1><p>{error||'It may have been unpublished or the link is incorrect.'}</p><Link className="button button--dark" to="/events">Browse conferences</Link></main>:<main className="event-detail">
+    <Link className="event-back" to="/events">← All conferences</Link><section className="event-detail-hero" style={event.banner_url?{backgroundImage:'linear-gradient(90deg,rgba(15,35,27,.86),rgba(15,35,27,.12)),url('+event.banner_url+')'}:undefined}><div><span className="event-detail-company">{event.company_name}</span><h1>{event.title}</h1><p>{event.description||'Join a community of people coming together to share ideas and build what comes next.'}</p></div></section>
+    <div className="event-detail-layout"><section className="event-detail-main"><div className="event-info-row"><span className="event-info-icon">◷</span><div><strong>{date}</strong><p>{time} · Local event time</p></div></div><div className="event-info-row"><span className="event-info-icon">⌖</span><div><strong>{event.venue_name||'Venue to be confirmed'}</strong><p>{event.venue_address||'Location details will be shared soon.'}</p></div></div><section className="event-about"><p className="eyebrow">ABOUT THIS CONFERENCE</p><h2>Make time for new perspectives.</h2><p>{event.description||'Meet speakers, practitioners, and curious minds for a day of ideas, learning, and connection.'}</p></section>{event.agenda_sessions?.length>0&&<section className="event-program"><p className="eyebrow">CONFERENCE PROGRAM</p><h2>Sessions and speakers</h2><div className="event-program-list">{event.agenda_sessions.map(session=><article key={session.id}><div><strong>{new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date(session.starts_at))} – {new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date(session.ends_at))}</strong><h3>{session.title}</h3>{session.speaker_name&&<p className="event-program-speaker">{session.speaker_name}</p>}{session.description&&<p>{session.description}</p>}</div>{session.venue_name&&<span>{session.venue_name}</span>}</article>)}</div></section>}</section>
+    <aside className="event-ticket-card"><p className="eyebrow">SAVE YOUR PLACE</p><h2>Registration</h2><div className="ticket-options">{event.ticket_categories.filter((ticket)=>ticket.is_active).map((ticket)=><div className="ticket-option" key={ticket.id}><div><strong>{ticket.name}</strong><small>{ticket.remaining_quantity} available</small></div><span>{ticket.price_minor_units===0?'Free':ticket.currency+' '+(ticket.price_minor_units/100).toFixed(2)}</span></div>)}</div>{event.ticket_categories.some((ticket)=>ticket.is_active)?<Link className="button button--dark event-register" to={'/events/'+event.slug+'/register'}>Register for this conference <span>→</span></Link>:<p className="tickets-unavailable">Ticket details will be available soon.</p>}<p className="ticket-secure">A unique registration code is issued for every registration.</p></aside></div>
+  </main>}</PublicLayout>;
+}

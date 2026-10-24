@@ -1,0 +1,45 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import AdminLayout from '../../components/layout/AdminLayout';
+import { accountsApi, eventsApi, type ReportingData } from '../../api/events';
+import './DashboardPage.css';
+
+const money = (minor:number,currency:string) => `${currency} ${(minor/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const moneyList = (rows:{currency:string;amount_minor_units:number}[]) => rows.length ? rows.map(row=>money(row.amount_minor_units,row.currency)).join(' · ') : '—';
+const shortDate = (value:string) => new Intl.DateTimeFormat(undefined,{day:'numeric',month:'short',year:'numeric'}).format(new Date(value));
+
+export default function DashboardPage() {
+  const [period,setPeriod]=useState('12m');
+  const [data,setData]=useState<ReportingData|null>(null);
+  const [name,setName]=useState('');
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState('');
+  const [refreshKey,setRefreshKey]=useState(0);
+
+  useEffect(()=>{let active=true;accountsApi.session().then(result=>{if(active)setName(result.user?.full_name?.split(/\s+/)[0]||result.user?.username||'');}).catch(()=>undefined);return()=>{active=false;};},[]);
+  useEffect(()=>{let active=true;setLoading(true);setError('');eventsApi.reporting(period).then(result=>{if(active)setData(result);}).catch(cause=>{if(active)setError(cause instanceof Error?cause.message:'Could not load your dashboard.');}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[period,refreshKey]);
+
+  const chart=useMemo(()=>{
+    const points=data?.trend||[];
+    if(!points.length)return {registrations:'',checkIns:'',maximum:1,labels:[] as typeof points};
+    const maximum=Math.max(1,...points.flatMap(point=>[point.registrations,point.check_ins]));
+    const line=(key:'registrations'|'check_ins')=>points.map((point,index)=>`${points.length===1?350:index*700/(points.length-1)},${184-point[key]/maximum*160}`).join(' ');
+    const stride=Math.max(1,Math.ceil(points.length/6));
+    return {registrations:line('registrations'),checkIns:line('check_ins'),maximum,labels:points.filter((_,index)=>index===0||index===points.length-1||index%stride===0)};
+  },[data]);
+  const greeting=new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening';
+  const metrics=data?[{label:'Registrations',value:data.summary.registration_count.toLocaleString(),note:period==='all'?'Across all time':`In the ${period==='30d'?'last 30 days':period==='90d'?'last 90 days':'last 12 months'}`,icon:'◎',tone:'green'},{label:'Confirmed attendees',value:data.summary.confirmed_count.toLocaleString(),note:`${data.summary.check_in_rate}% check-in rate`,icon:'✓',tone:'blue'},{label:'Net revenue',value:data.financial_access?moneyList(data.summary.net_revenue):'Restricted',note:data.financial_access?'After processed refunds':'Finance access is required',icon:'₵',tone:'gold'},{label:'Checked in',value:data.summary.check_in_count.toLocaleString(),note:'Recorded event entries',icon:'↗',tone:'violet'}]:[];
+
+  return <AdminLayout title="Overview"><div className="dashboard-page">
+    <section className="dashboard-welcome"><div className="welcome-copy"><span className="welcome-kicker"><i/> GROUP OPERATIONS</span><h2>{greeting}{name?`, ${name}`:''}.</h2><p>Here’s what’s happening across your conferences today.</p></div><div className="welcome-period"><label htmlFor="dashboard-period">Report range</label><select id="dashboard-period" value={period} onChange={event=>setPeriod(event.target.value)}><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option><option value="12m">Last 12 months</option><option value="all">All time</option></select></div></section>
+    <nav className="dashboard-shortcuts" aria-label="Common tasks"><span>QUICK ACTIONS</span><Link to="/admin/events">＋ <b>New conference</b></Link><Link to="/staff/walk-in">＋ <b>Walk-in attendee</b></Link><Link to="/staff/check-in">⌖ <b>Check-in desk</b></Link><Link to="/admin/reports">↗ <b>View reports</b></Link></nav>
+    {error&&<div className="dashboard-error" role="alert"><span>{error}</span><button onClick={()=>setRefreshKey(value=>value+1)}>Try again</button></div>}
+    {loading&&!data?<section className="dashboard-loading" aria-label="Loading dashboard"><i/><i/><i/><i/></section>:data&&<>
+      <section className="dashboard-metrics" aria-label="Performance summary">{metrics.map((item,index)=><article className="dashboard-metric" key={item.label}><div className="dashboard-metric-head"><span>{item.label}</span><i className={'dashboard-metric-icon '+item.tone}>{item.icon}</i></div><strong className={index===2?'dashboard-metric-value revenue':'dashboard-metric-value'}>{item.value}</strong><small>{item.note}</small></article>)}</section>
+      <div className="dashboard-main-grid"><section className="dashboard-panel activity-panel"><header className="dashboard-panel-heading"><div><span className="section-kicker">ACTIVITY</span><h2>Registrations over time</h2><p>Compare new registrations with attendees checked in.</p></div><Link to="/admin/reports">Full report <span>↗</span></Link></header><div className="dashboard-chart-legend"><span><i/> Registrations</span><span><i/> Check-ins</span></div><div className="dashboard-chart"><div className="dashboard-chart-y"><span>{chart.maximum.toLocaleString()}</span><span>{Math.round(chart.maximum*.66).toLocaleString()}</span><span>{Math.round(chart.maximum*.33).toLocaleString()}</span><span>0</span></div><div className="dashboard-chart-plot"><div className="dashboard-chart-grid"><i/><i/><i/><i/></div>{data.trend.some(point=>point.registrations||point.check_ins)?<svg viewBox="0 0 700 200" preserveAspectRatio="none" role="img" aria-label="Registrations and check-ins over the selected period"><polyline points={chart.registrations} fill="none" stroke="#287454" strokeWidth="3" vectorEffect="non-scaling-stroke"/><polyline points={chart.checkIns} fill="none" stroke="#d7a24c" strokeWidth="2.5" vectorEffect="non-scaling-stroke"/></svg>:<div className="dashboard-chart-empty">Registration activity will appear here.</div>}<div className="dashboard-chart-x">{chart.labels.map(point=><span key={point.label}>{point.label}</span>)}</div></div></div></section>
+        <section className="dashboard-panel upcoming-panel"><header className="dashboard-panel-heading"><div><span className="section-kicker">ON THE CALENDAR</span><h2>Upcoming conferences</h2><p>Your next published events.</p></div><Link to="/admin/events">All events <span>↗</span></Link></header><div className="dashboard-upcoming-list">{data.upcoming_conferences.length?data.upcoming_conferences.map(event=><article className="dashboard-event" key={event.slug}><div className="dashboard-event-date"><strong>{new Date(event.starts_at).getDate()}</strong><span>{new Date(event.starts_at).toLocaleDateString(undefined,{month:'short'}).toUpperCase()}</span></div><div className="dashboard-event-info"><Link to={'/events/'+event.slug}>{event.title}</Link><small>{event.venue_name||'Venue to be announced'}</small></div><div className="dashboard-event-count"><strong>{event.registration_count.toLocaleString()}</strong><small>registered</small></div></article>):<div className="dashboard-empty"><span>◷</span><strong>No upcoming events</strong><p>Published conferences will show here.</p><Link to="/admin/events">Create a conference</Link></div>}</div></section></div>
+      <section className="dashboard-panel performance-panel"><header className="dashboard-panel-heading"><div><span className="section-kicker">ACROSS THE GROUP</span><h2>Conference performance</h2><p>Compare registrations and revenue for each conference.</p></div><Link to="/admin/reports">Open reports <span>↗</span></Link></header><div className="dashboard-table-scroll"><table className="dashboard-table"><thead><tr><th>CONFERENCE</th><th>DATE</th><th>REGISTRATIONS</th><th>CONFIRMED</th><th>GROSS REVENUE</th><th>STATUS</th></tr></thead><tbody>{data.conference_performance.slice(0,8).map(event=><tr key={event.slug}><td><Link to={'/events/'+event.slug}>{event.title}</Link><small>{event.company_name}</small></td><td>{shortDate(event.starts_at)}</td><td>{event.registration_count.toLocaleString()}</td><td>{event.confirmed_count.toLocaleString()}</td><td>{data.financial_access?moneyList(event.revenue_by_currency):'—'}</td><td><span className={'dashboard-status '+(event.status==='published'?'published':'other')}>{event.status}</span></td></tr>)}</tbody></table>{!data.conference_performance.length&&<div className="dashboard-table-empty">No conference activity in this reporting range.</div>}</div></section>
+      <footer className="dashboard-updated">Report refreshed {new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date(data.generated_at))}<button onClick={()=>setRefreshKey(value=>value+1)} disabled={loading}>{loading?'Refreshing…':'Refresh data ↻'}</button></footer>
+    </>}
+  </div></AdminLayout>;
+}

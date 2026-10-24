@@ -1,0 +1,18 @@
+# JavaScript dependencies and generated frontend builds
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+
+# Python and Django local files
+__pycache__/
+*.py[cod]
+backend/.venv/
+backend/db.sqlite3
+backend/.env
+
+# Local environment files and editor/OS metadata
+.env
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
