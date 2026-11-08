@@ -6,7 +6,7 @@ from apps.registrations.models import Registration
 
 class CheckInRecord(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.PROTECT, related_name="check_in")
-    checked_in_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="check_ins")
+    checked_in_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="check_ins")
     checked_in_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

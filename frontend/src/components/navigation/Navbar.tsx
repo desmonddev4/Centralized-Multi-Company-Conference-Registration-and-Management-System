@@ -63,12 +63,12 @@ export default function Navbar() {
       <NavLink to="/contact" onClick={close}>Contact</NavLink>
       <div className="public-nav__drawer-actions">
         <Link className="public-nav__cta" to="/events" onClick={close}>Get tickets <span aria-hidden="true">↗</span></Link>
-        <Link className="public-nav__staff" to="/login" onClick={close}>Staff sign in</Link>
+        <Link className="public-nav__staff" to="/login" onClick={close}>Login</Link>
       </div>
     </nav>
 
     <div className="public-nav__actions">
-      <Link className="public-nav__staff" to="/login">Staff sign in</Link>
+      <Link className="public-nav__staff" to="/login">Login</Link>
       <Link className="public-nav__cta" to="/events">Get tickets</Link>
     </div>
 

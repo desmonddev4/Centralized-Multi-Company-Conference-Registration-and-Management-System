@@ -6,11 +6,16 @@ from .models import CheckInRecord
 
 class CheckInRecordSerializer(serializers.ModelSerializer):
     registration = RegistrationLookupSerializer(read_only=True)
-    checked_in_by_name = serializers.CharField(source="checked_in_by.get_full_name", read_only=True)
+    checked_in_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = CheckInRecord
         fields = ("registration", "checked_in_at", "checked_in_by_name")
+
+    def get_checked_in_by_name(self, obj):
+        if obj.checked_in_by is None:
+            return "Attendee kiosk"
+        return obj.checked_in_by.get_full_name() or obj.checked_in_by.get_username()
 
 
 class CheckInLogSerializer(serializers.ModelSerializer):
@@ -27,4 +32,6 @@ class CheckInLogSerializer(serializers.ModelSerializer):
         fields = ("registration_code", "attendee_name", "conference_title", "conference_slug", "company_name", "ticket_name", "checked_in_at", "checked_in_by_name")
 
     def get_checked_in_by_name(self, obj):
+        if obj.checked_in_by is None:
+            return "Attendee kiosk"
         return obj.checked_in_by.get_full_name() or obj.checked_in_by.get_username()

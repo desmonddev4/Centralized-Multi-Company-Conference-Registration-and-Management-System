@@ -47,12 +47,15 @@ The example environment uses Django’s console email backend for local developm
 - PATCH /api/settings/ — Business Owner (`core.change_platformsettings`) updates public identity and the hold duration for new paid registrations. Provider secrets remain environment-only.
 - GET /api/operations/readiness/ — Business Owner-only operational check for database, migrations, Django security settings, Paystack mode, email backend configuration, and frontend URL. It reports configuration state only; it does not test live provider delivery or reveal secret values.
 - POST /api/walk-ins/ — authenticated staff create confirmed at-venue registrations and record cash or MoMo received.
+- POST /api/check-ins/attend/ — attendee kiosk check-in. It is open only while a published conference is in progress, matches the attendee's name and normalized phone to one registration, and verifies a complimentary registration or its recorded Paystack/offline payment before recording entry. It also stores the attendee's job title, organization, and role.
 - GET /api/check-ins/{registration_code}/ — authenticated staff look up a registration and its check-in state.
 - GET /api/check-ins/ — check-in audit log (`checkin.view_checkinrecord`), with optional `?conference={slug}` filter.
 - POST /api/check-ins/{registration_code}/ — record attendee entry; repeated requests return the existing check-in without creating a duplicate.
 - GET /api/audit/ — owner-only, searchable audit activity with offset pagination.
 
 Ticket prices are stored in integer minor units (for GHS, pesewas). Event date-times are stored as timezone-aware values. Draft conferences stay hidden from public event pages. Paid registration holds use the configured duration (15 minutes by default); pending payments must not be treated as confirmed tickets.
+
+On event day, open the frontend at `/attend` on the attendee device. Attendees enter the same name and phone number used on their registration; the kiosk verifies payment records and records check-in before showing a QR contact card. Cash payments must first be recorded by staff using the walk-in registration workflow. Unmatched, ambiguous, or unverified registrations should be resolved at the registration desk.
 
 Set `PAYSTACK_SECRET_KEY` in `backend/.env` before using online checkout. Use a Paystack test secret for development, never expose the secret in frontend configuration, and configure the Paystack webhook URL as `https://your-api-host/api/payments/paystack/webhook/`. Successful charges are independently verified with Paystack. If payment succeeds after ticket inventory has filled, the registration moves to `payment_review` for staff resolution instead of overselling.
 

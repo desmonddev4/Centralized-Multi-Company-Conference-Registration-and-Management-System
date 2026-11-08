@@ -12,7 +12,7 @@ export type TicketCategoryInput = { id?: number; name: string; description?: str
 export type ConferenceInput = { company: number; title: string; description: string; banner_url: string; registration_url: string; venue_name: string; venue_address: string; starts_at: string; ends_at: string; registration_opens_at: string | null; registration_closes_at: string | null; capacity: number | null; status: EventStatus; ticket_categories: TicketCategoryInput[] };
 export type RegistrationStatus = 'pending_payment' | 'confirmed' | 'payment_review' | 'cancelled' | 'expired';
 export type Registration = { registration_code: string; full_name: string; status: RegistrationStatus; amount_due_minor_units: number; currency: string; hold_expires_at: string | null; created_at: string; conference_title: string; conference_slug: string; ticket_category_name: string; starts_at: string };
-export type AdminRegistration = Registration & { company_name: string; email: string; phone: string; payment_method: 'none' | 'paystack' | 'cash' | 'momo'; payment_received_at: string | null };
+export type AdminRegistration = Registration & { company_name: string; email: string; phone: string; job_title: string; organization: string; attendee_role: KioskAttendanceInput['role'] | ''; payment_method: 'none' | 'paystack' | 'cash' | 'momo'; payment_received_at: string | null };
 export type RegistrationInput = { ticket_category: number; full_name: string; email: string; phone?: string };
 export type Payment = { reference: string; status: 'initializing' | 'initialized' | 'pending' | 'failed' | 'abandoned' | 'succeeded' | 'review'; amount_minor_units: number; currency: string; authorization_url: string; registration_code: string; created_at: string };
 export type OfflineCollection = { id:number; registration_code:string; attendee_name:string; conference_slug:string; conference_title:string; company_name:string; ticket_name:string; method:'cash'|'momo'; amount_minor_units:number; currency:string; receipt_reference:string; received_by_name:string; received_at:string };
@@ -25,6 +25,9 @@ export type WalkInInput = { conference: string; ticket_category: number; full_na
 export type CheckInRecord = { registration: Registration; checked_in_at: string; checked_in_by_name: string };
 export type CheckInLogEntry = { registration_code:string; attendee_name:string; conference_title:string; conference_slug:string; company_name:string; ticket_name:string; checked_in_at:string; checked_in_by_name:string };
 export type CheckInLookup = { registration: Registration; checked_in: boolean; record: CheckInRecord | null };
+export type KioskAttendanceInput = { conference: string; full_name: string; phone: string; job_title: string; organization: string; role: 'attendee'|'speaker'|'sponsor'|'exhibitor'|'organizer'|'media'|'other' };
+export type KioskAttendee = { full_name: string; phone: string; job_title: string; organization: string; role: KioskAttendanceInput['role']; conference_title: string; ticket_category_name: string; registration_code: string; payment_method: 'none'|'paystack'|'cash'|'momo'; checked_in_at: string };
+export type KioskAttendanceResult = { detail: string; already_checked_in: boolean; attendee: KioskAttendee };
 export type IssuedTicket = { registration_code:string; attendee_name:string; ticket_name:string; conference_title:string; venue_name:string; venue_address:string; starts_at:string; ends_at:string; issued_at:string };
 export type TicketDelivery = { registration_code:string; attendee_name:string; email:string; conference_title:string; company_name:string; ticket_name:string; registration_status:RegistrationStatus; ticket_issued:boolean; issued_at:string|null; email_sent_at:string|null; email_error:string };
 export type StaffRole = { id: number; name: string; permissions: number[] };
@@ -90,6 +93,7 @@ export const eventsApi = {
   reporting(period='12m',conference='') { const params=new URLSearchParams({period});if(conference)params.set('conference',conference);return request<ReportingData>('/reporting/dashboard/?'+params.toString()); },
   walkIn(input: WalkInInput) { return request<Registration>('/walk-ins/', { method: 'POST', body: JSON.stringify(input) }); },
   checkInLookup(code: string) { return request<CheckInLookup>('/check-ins/' + encodeURIComponent(code) + '/'); },
+  kioskAttendance(input: KioskAttendanceInput) { return request<KioskAttendanceResult>('/check-ins/attend/', { method: 'POST', body: JSON.stringify(input) }); },
   checkInLog(conference='') { const params=new URLSearchParams();if(conference)params.set('conference',conference);return request<CheckInLogEntry[]>('/check-ins/'+(params.size?'?'+params.toString():'')); },
   checkIn(code: string) { return request<{ detail: string; record: CheckInRecord }>('/check-ins/' + encodeURIComponent(code) + '/', { method: 'POST', body: '{}' }); },
 };

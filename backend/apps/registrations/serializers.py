@@ -104,10 +104,15 @@ class RegistrationAdminSerializer(RegistrationLookupSerializer):
     company_name = serializers.CharField(source="ticket_category.conference.company.name", read_only=True)
     email = serializers.EmailField(read_only=True)
     phone = serializers.CharField(read_only=True)
+    job_title = serializers.CharField(read_only=True)
+    organization = serializers.CharField(read_only=True)
+    attendee_role = serializers.CharField(read_only=True)
     payment_method = serializers.CharField(read_only=True)
     payment_received_at = serializers.DateTimeField(read_only=True)
 
     class Meta(RegistrationLookupSerializer.Meta):
-        fields = RegistrationLookupSerializer.Meta.fields + ("company_name", "email", "phone", "payment_method", "payment_received_at")
-
+        fields = RegistrationLookupSerializer.Meta.fields + (
+            "company_name", "email", "phone", "job_title", "organization",
+            "attendee_role", "payment_method", "payment_received_at",
+        )
 

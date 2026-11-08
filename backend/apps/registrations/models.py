@@ -1,4 +1,5 @@
 ﻿import secrets
+import re
 import string
 import uuid
 
@@ -7,6 +8,15 @@ from django.utils import timezone
 
 
 class Registration(models.Model):
+    class AttendeeRole(models.TextChoices):
+        ATTENDEE = "attendee", "Attendee"
+        SPEAKER = "speaker", "Speaker"
+        SPONSOR = "sponsor", "Sponsor"
+        EXHIBITOR = "exhibitor", "Exhibitor"
+        ORGANIZER = "organizer", "Organizer"
+        MEDIA = "media", "Media"
+        OTHER = "other", "Other"
+
     class Status(models.TextChoices):
         PENDING_PAYMENT = "pending_payment", "Pending payment"
         CONFIRMED = "confirmed", "Confirmed"
@@ -27,6 +37,10 @@ class Registration(models.Model):
     full_name = models.CharField(max_length=160)
     email = models.EmailField()
     phone = models.CharField(max_length=40, blank=True)
+    phone_normalized = models.CharField(max_length=15, blank=True, db_index=True)
+    job_title = models.CharField(max_length=160, blank=True)
+    organization = models.CharField(max_length=160, blank=True)
+    attendee_role = models.CharField(max_length=20, choices=AttendeeRole.choices, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices)
     amount_due_minor_units = models.PositiveBigIntegerField(default=0)
     currency = models.CharField(max_length=3, default="GHS")
@@ -41,6 +55,10 @@ class Registration(models.Model):
         indexes = [models.Index(fields=["ticket_category", "status", "hold_expires_at"], name="reg_ticket_status_exp_idx")]
 
     def save(self, *args, **kwargs):
+        self.phone_normalized = re.sub(r"\D", "", self.phone)[:15]
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "phone" in update_fields:
+            kwargs["update_fields"] = set(update_fields) | {"phone_normalized"}
         if not self.registration_code:
             alphabet = string.ascii_uppercase + string.digits
             while True:
@@ -62,4 +80,3 @@ class Registration(models.Model):
 
     def __str__(self):
         return f"{self.registration_code} — {self.full_name}"
-

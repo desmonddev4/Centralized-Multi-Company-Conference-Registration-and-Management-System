@@ -47,12 +47,12 @@ export default function Footer() {
         <h2>Conference help</h2>
         <Link to="/contact">Contact support</Link>
         <Link to="/events">Event details</Link>
-        <Link to="/login">Staff sign in</Link>
       </div>
       <div className="footer-column footer-contact">
         <h2>Contact</h2>
-        {settings.support_email ? <a href={`mailto:${settings.support_email}`}>{settings.support_email}</a> : <span>Contact details coming soon</span>}
+        {settings.support_email && <a href={`mailto:${settings.support_email}`}>{settings.support_email}</a>}
         {settings.support_phone && <a href={`tel:${settings.support_phone}`}>{settings.support_phone}</a>}
+        {!settings.support_email && !settings.support_phone && <span>Contact details coming soon</span>}
       </div>
     </div>
     <div className="footer-bottom">
