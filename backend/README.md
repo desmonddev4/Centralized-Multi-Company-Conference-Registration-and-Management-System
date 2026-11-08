@@ -7,6 +7,21 @@ From this directory, create a virtual environment, install requirements.txt, cop
     python manage.py setup_roles
     python manage.py runserver
 
+## Deploy the backend to Render
+
+The repository-root `render.yaml` is a Render Blueprint for the Django API and a persistent PostgreSQL database. In Render, create a new Blueprint from this repository and apply the `gci-conference-backend` service and `gci-conference-db` database. The Blueprint uses paid service/database plans; review the current Render pricing before applying it.
+
+During Blueprint setup, provide:
+
+- `FRONTEND_URL`: the public frontend origin, such as `https://your-frontend.example.com`.
+- `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS`: comma-separated frontend origins, including the scheme, for example `https://your-frontend.example.com`. Add every production frontend origin; include `https://` in trusted origins.
+- `PAYSTACK_CALLBACK_URL` and `PAYSTACK_SECRET_KEY` when enabling Paystack checkout.
+- `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `DEFAULT_FROM_EMAIL` to deliver tickets and password reset messages. The SMTP port defaults to 587 with TLS enabled.
+
+The Blueprint generates `SECRET_KEY`, disables Django debug mode, serves collected Django static files with WhiteNoise, runs database migrations on service startup, and uses the public events API for its health check. If you attach a custom API domain, add that hostname to `ALLOWED_HOSTS` in the Render service environment. After the first deploy, create a Django superuser from the service's Shell and run `python manage.py setup_roles`.
+
+The `/attend` check-in page is part of the frontend; configure its frontend deployment to use this backend's `/api` URL.
+
 Sign in at http://127.0.0.1:8000/admin/. Add the group companies there; the conference page reads company choices from /api/companies/. The same administrator session authorizes conference creation and editing from the frontend.
 
 The initial superuser can create and assign staff accounts and roles in the app after running `setup_roles`. Role permissions apply across every company in the shared system. The Business Owner group is protected from editing in the app; assign it only to trusted owner accounts. Login is available through `/api/auth/login/`; authenticated admin and staff pages require a staff session.
