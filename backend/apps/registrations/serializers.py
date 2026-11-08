@@ -39,7 +39,10 @@ class RegistrationCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError({"ticket_category": "Choose a ticket type for this conference."})
         if conference.status != Conference.Status.PUBLISHED:
             raise serializers.ValidationError("Registration is not open for this conference.")
-        if conference.starts_at <= now:
+        if conference.registration_closes_at:
+            if conference.registration_closes_at <= now:
+                raise serializers.ValidationError("Registration has closed.")
+        elif conference.starts_at <= now:
             raise serializers.ValidationError("Registration has closed because the conference has started.")
         if conference.registration_opens_at and conference.registration_opens_at > now:
             raise serializers.ValidationError("Registration has not opened yet.")
@@ -66,7 +69,8 @@ class RegistrationCreateSerializer(serializers.Serializer):
             if conference_reserved >= conference.capacity:
                 raise serializers.ValidationError({"ticket_category": "This conference has reached its capacity."})
 
-        is_free = category.price_minor_units == 0
+        current_price = category.price_at(now)
+        is_free = current_price == 0
         hold_minutes = PlatformSettings.get_solo().registration_hold_minutes
         expires_at = None if is_free else now + timedelta(minutes=hold_minutes)
         return Registration.objects.create(
@@ -75,7 +79,7 @@ class RegistrationCreateSerializer(serializers.Serializer):
             email=validated_data["email"],
             phone=validated_data.get("phone", ""),
             status=Registration.Status.CONFIRMED if is_free else Registration.Status.PENDING_PAYMENT,
-            amount_due_minor_units=category.price_minor_units,
+            amount_due_minor_units=current_price,
             currency=category.currency,
             hold_expires_at=expires_at,
         )

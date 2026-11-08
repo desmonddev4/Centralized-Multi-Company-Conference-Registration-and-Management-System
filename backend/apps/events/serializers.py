@@ -27,22 +27,31 @@ class TicketCategorySerializer(serializers.ModelSerializer):
     quantity_available = serializers.IntegerField(min_value=1)
     max_per_registration = serializers.IntegerField(min_value=1)
     remaining_quantity = serializers.IntegerField(read_only=True)
+    current_price_minor_units = serializers.SerializerMethodField()
 
     class Meta:
         model = TicketCategory
         fields = (
-            "id", "conference", "name", "description", "price_minor_units", "currency",
+            "id", "conference", "name", "description", "price_minor_units", "early_price_minor_units",
+            "early_sales_close_at", "current_price_minor_units", "currency",
             "quantity_available", "max_per_registration", "sales_open_at", "sales_close_at",
             "is_active", "sort_order", "remaining_quantity", "created_at", "updated_at",
         )
         read_only_fields = ("conference", "created_at", "updated_at", "remaining_quantity")
 
     def validate(self, attrs):
+        early_price = attrs.get("early_price_minor_units", getattr(self.instance, "early_price_minor_units", None))
+        early_close = attrs.get("early_sales_close_at", getattr(self.instance, "early_sales_close_at", None))
+        if (early_price is None) != (early_close is None):
+            raise serializers.ValidationError("Set both the early fee and its closing time, or leave both empty.")
         opens = attrs.get("sales_open_at", getattr(self.instance, "sales_open_at", None))
         closes = attrs.get("sales_close_at", getattr(self.instance, "sales_close_at", None))
         if opens and closes and closes <= opens:
             raise serializers.ValidationError({"sales_close_at": "Sales must close after they open."})
         return attrs
+
+    def get_current_price_minor_units(self, category):
+        return category.price_at()
 
     def create(self, validated_data):
         validated_data.pop("id", None)
@@ -59,7 +68,7 @@ class ConferenceSerializer(serializers.ModelSerializer):
         model = Conference
         fields = (
             "id", "public_id", "slug", "company", "company_name", "title", "description",
-            "banner_url", "venue_name", "venue_address", "starts_at", "ends_at",
+            "banner_url", "registration_url", "venue_name", "venue_address", "starts_at", "ends_at",
             "registration_opens_at", "registration_closes_at", "capacity", "status",
             "ticket_categories", "agenda_sessions", "created_at", "updated_at",
         )

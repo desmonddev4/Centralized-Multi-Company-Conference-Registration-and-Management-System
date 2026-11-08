@@ -257,7 +257,7 @@ def apply_verified_result(payment, data):
         payment.status = Payment.Status.SUCCEEDED
         payment.gateway_response = str(data.get("gateway_response", ""))[:400]
         payment.paystack_transaction_id = data.get("id")
-        payment.paid_at = timezone.now()
+        payment.paid_at = parse_datetime(data["paid_at"]) if data.get("paid_at") else timezone.now()
         payment.save(update_fields=["status", "gateway_response", "paystack_transaction_id", "paid_at", "updated_at"])
         registration.payment_method = Registration.PaymentMethod.PAYSTACK
         registration.payment_received_at = payment.paid_at

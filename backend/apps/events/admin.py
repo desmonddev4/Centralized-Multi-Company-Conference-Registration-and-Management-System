@@ -16,6 +16,6 @@ class ConferenceAdmin(admin.ModelAdmin):
 
 @admin.register(TicketCategory)
 class TicketCategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "conference", "price_minor_units", "currency", "quantity_available", "is_active")
+    list_display = ("name", "conference", "early_price_minor_units", "price_minor_units", "currency", "quantity_available", "is_active")
     list_filter = ("currency", "is_active")
     search_fields = ("name", "conference__title")

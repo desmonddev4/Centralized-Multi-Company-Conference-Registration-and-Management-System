@@ -1,1 +1,86 @@
-﻿.staff-nav { height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 clamp(1rem,5vw,4rem); border-bottom:1px solid #e2e8eb; background:#fff; }.staff-nav a { color:#65737e; font-size:.82rem; text-decoration:none; }.staff-nav__brand { display:flex; align-items:center; gap:.65rem; color:#1d2a34!important; font-weight:700; }.staff-nav .brand-mark { width:30px; height:30px; border-radius:9px; background:#17232d; color:white; }
+﻿.staff-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 clamp(1rem, 5vw, 4rem);
+  border-bottom: 1px solid rgba(109, 74, 255, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* Scroll progress bar: fills as the page scrolls (modern browsers) */
+.staff-nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+@supports (animation-timeline: scroll()) {
+  .staff-nav::after {
+    animation: staff-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes staff-progress { to { transform: scaleX(1); } }
+
+.staff-nav a {
+  position: relative;
+  color: #6c7391;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.staff-nav > a:not(.staff-nav__brand)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  border-radius: 2px;
+  background: #6d4aff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.staff-nav > a:not(.staff-nav__brand):hover { color: #6d4aff; }
+.staff-nav > a:not(.staff-nav__brand):hover::after { transform: scaleX(1); }
+
+.staff-nav a.staff-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #1c2140;
+  font-weight: 700;
+}
+.staff-nav .brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: #fff;
+  font-size: 0.8rem;
+  box-shadow: 0 6px 16px rgba(109, 74, 255, 0.4);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+}
+.staff-nav__brand:hover .brand-mark {
+  transform: rotate(-8deg) scale(1.1);
+  box-shadow: 0 10px 22px rgba(109, 74, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-nav::after { animation: none; }
+  .staff-nav .brand-mark, .staff-nav a, .staff-nav > a::after { transition: none; }
+}

@@ -1,0 +1,278 @@
+/* Shared visual layer for admin and staff workspace pages. Import once from main.tsx. */
+:root {
+  --ui-ink: #1c2940;
+  --ui-muted: #68768c;
+  --ui-faint: #96a1b4;
+  --ui-accent: #1769d2;
+  --ui-accent-2: #38a3ef;
+  --ui-line: rgba(23, 105, 210, .14);
+  --ui-card: rgba(255, 255, 255, .88);
+  --ui-ok: #1f9d6b;
+  --ui-warn: #c98412;
+  --ui-bad: #d6455d;
+  --ui-radius: 16px;
+  --ui-shadow: 0 1px 2px rgba(28, 41, 64, .04), 0 8px 24px rgba(28, 41, 64, .07);
+  --ui-shadow-hover: 0 2px 4px rgba(28, 41, 64, .05), 0 18px 44px rgba(23, 105, 210, .18);
+  --ui-ease: cubic-bezier(.2, .8, .2, 1);
+  --ui-sticky-top: .75rem;
+}
+
+@keyframes ui-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes ui-row-in { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@keyframes ui-scroll-reveal { from { opacity: .25; translate: 0 30px; scale: .98; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes ui-live-pulse { 0% { box-shadow: 0 0 0 0 rgba(31,157,107,.55); } 100% { box-shadow: 0 0 0 9px rgba(31,157,107,0); } }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+:is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card) {
+  overflow: hidden;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: var(--ui-card);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--ui-shadow);
+  transition: border-color .3s, box-shadow .3s;
+}
+:is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card):hover {
+  border-color: rgba(23,105,210,.3);
+  box-shadow: var(--ui-shadow-hover);
+}
+:is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card) > header {
+  border-bottom: 1px solid var(--ui-line);
+  background: linear-gradient(180deg, rgba(23,105,210,.05), transparent);
+}
+:is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card) > header h2 {
+  color: var(--ui-ink);
+  letter-spacing: -.02em;
+}
+
+:is(.ticket-delivery-metrics article,.offline-summary > div,.payment-review-summary article,.refunds-summary article) {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--ui-line);
+  border-radius: 14px;
+  background: var(--ui-card);
+  box-shadow: var(--ui-shadow);
+  transition: transform .35s var(--ui-ease), box-shadow .35s, border-color .35s;
+}
+:is(.ticket-delivery-metrics article,.offline-summary > div,.payment-review-summary article,.refunds-summary article)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg,var(--ui-accent),var(--ui-accent-2));
+  transform: scaleX(.16);
+  transform-origin: left;
+  transition: transform .55s var(--ui-ease);
+}
+:is(.ticket-delivery-metrics article,.offline-summary > div,.payment-review-summary article,.refunds-summary article):hover {
+  transform: translateY(-4px);
+  border-color: rgba(23,105,210,.3);
+  box-shadow: var(--ui-shadow-hover);
+}
+:is(.ticket-delivery-metrics article,.offline-summary > div,.payment-review-summary article,.refunds-summary article):hover::before { transform: scaleX(1); }
+
+@supports (animation-timeline: view()) {
+  :is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card,.ticket-delivery-metrics article,.offline-summary > div,.payment-review-summary article,.refunds-summary article,.payment-reviews-intro) {
+    animation: ui-scroll-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 45%;
+  }
+}
+
+:is(.attendees-table-scroll,.ticket-delivery-scroll,.offline-scroll,.payment-review-table-wrap,.refunds-table-scroll,.payments-table-scroll) {
+  max-height: min(68vh,640px);
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23,105,210,.35) transparent;
+}
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  color: var(--ui-muted);
+  border-bottom: 1px solid var(--ui-line);
+  background: rgba(247,250,255,.94);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr { animation: ui-row-in .45s var(--ui-ease) backwards; transition: background .2s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(1) { animation-delay: 0s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(2) { animation-delay: .04s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(3) { animation-delay: .08s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(4) { animation-delay: .12s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(5) { animation-delay: .16s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(6) { animation-delay: .2s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(7) { animation-delay: .24s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(8) { animation-delay: .28s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:nth-child(n+9) { animation-delay: .32s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody td { border-top: 1px solid rgba(23,105,210,.07); color: #4b5870; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody td:first-child { box-shadow: inset 3px 0 0 transparent; transition: box-shadow .25s; }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:hover { background: linear-gradient(90deg,rgba(23,105,210,.08),rgba(56,163,239,.04)); }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--ui-accent); }
+:is(.attendees-table,.ticket-delivery-scroll table,.offline-scroll table,.payment-review-table,.refunds-table,.payments-table) code { padding: .15rem .45rem; border-radius: 6px; background: rgba(23,105,210,.08); color: var(--ui-accent); }
+
+:is(.attendees-error,.ticket-delivery-alert,.ticket-delivery-notice,.offline-error,.payment-review-alert,.payment-review-notice,.refunds-error,.refunds-notice,.payments-error) {
+  border-radius: 12px;
+  border-left: 4px solid currentColor;
+  animation: ui-rise .4s var(--ui-ease) backwards;
+}
+
+/* Dashboard, company and conference screens use their own legacy class names. */
+:is(.dashboard-welcome,.dashboard-shortcuts,.dashboard-metric,.dashboard-panel,.events-table-card,.companies-card,.checkin-search,.checkin-attendee,.walkin-form) {
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: var(--ui-card);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--ui-shadow);
+  transition: border-color .3s, box-shadow .3s, transform .35s var(--ui-ease);
+}
+:is(.dashboard-metric,.dashboard-panel,.events-table-card,.companies-card,.checkin-attendee):hover {
+  border-color: rgba(23,105,210,.3);
+  box-shadow: var(--ui-shadow-hover);
+  transform: translateY(-2px);
+}
+.dashboard-welcome {
+  border-color: rgba(23,105,210,.15);
+  background: linear-gradient(118deg,rgba(23,105,210,.1),rgba(255,255,255,.84) 62%,rgba(56,163,239,.08));
+}
+.dashboard-metric { position: relative; overflow: hidden; }
+.dashboard-metric::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg,var(--ui-accent),var(--ui-accent-2));
+  transform: scaleX(.16);
+  transform-origin: left;
+  transition: transform .55s var(--ui-ease);
+}
+.dashboard-metric:hover::before { transform: scaleX(1); }
+:is(.dashboard-shortcuts a,.dashboard-panel-heading>a,.dashboard-empty>a,.dashboard-updated button) { transition: color .2s, background-color .2s, transform .2s; }
+.dashboard-shortcuts a:hover { color: var(--ui-accent); background: rgba(23,105,210,.09); transform: translateY(-1px); }
+.dashboard-shortcuts a:first-of-type { color: #fff; background: linear-gradient(135deg,#3189e8,#1769d2 65%,#1553b7); box-shadow: 0 7px 18px rgba(23,105,210,.27); }
+.dashboard-shortcuts a:first-of-type:hover { color: #fff; background: linear-gradient(135deg,#3b9af5,#1553b7); box-shadow: 0 11px 24px rgba(23,105,210,.36); }
+.admin-content .dashboard-shortcuts a:first-of-type,
+.admin-content .dashboard-shortcuts a:first-of-type:hover,
+.admin-content .dashboard-shortcuts a:first-of-type:focus-visible,
+.admin-content .dashboard-shortcuts a:first-of-type b { color:#fff; }
+.admin-content .page-heading__actions .button--dark,
+.admin-content .page-heading__actions .button--dark:hover { color:#fff; }
+.dashboard-table th { position: sticky; top: 0; z-index: 2; background: rgba(247,250,255,.94); backdrop-filter: blur(8px); }
+.dashboard-table tbody tr { transition: background .2s; }
+.dashboard-table tbody tr:hover { background: rgba(23,105,210,.06); }
+:is(.events-table,.companies-table,.dashboard-table) tbody tr { transition: background .2s; }
+:is(.events-table,.companies-table,.dashboard-table) tbody tr:hover { background: linear-gradient(90deg,rgba(23,105,210,.07),rgba(56,163,239,.03)); }
+:is(.events-table,.companies-table,.dashboard-table) thead th { position: sticky; top: 0; z-index: 2; background: rgba(247,250,255,.95); backdrop-filter: blur(8px); }
+:is(.events-table-card,.companies-card,.dashboard-panel,.dashboard-metric,.dashboard-welcome,.checkin-search,.checkin-attendee,.walkin-form) { animation: ui-rise .5s var(--ui-ease) both; }
+
+/* Bring legacy dark buttons onto the shared blue button system. */
+.admin-content .button--dark,
+.staff-layout .button--dark {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(135deg,#3189e8,#1769d2 55%,#1553b7);
+  box-shadow: 0 8px 20px rgba(23,105,210,.28),inset 0 1px 0 rgba(255,255,255,.25);
+  transition: transform .25s var(--ui-ease),box-shadow .25s,background-position .45s;
+  background-size: 160% 160%;
+  background-position: 0 50%;
+}
+.admin-content .button--dark:hover:not(:disabled),
+.staff-layout .button--dark:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background-position: 100% 50%;
+  box-shadow: 0 13px 28px rgba(23,105,210,.4),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.admin-content .button--dark:active:not(:disabled),
+.staff-layout .button--dark:active:not(:disabled) { transform: translateY(0) scale(.97); }
+.admin-content .button--dark:focus-visible,
+.staff-layout .button--dark:focus-visible { outline: 3px solid rgba(23,105,210,.4); outline-offset: 2px; }
+.admin-content .button--quiet:hover:not(:disabled),
+.staff-layout .button--quiet:hover:not(:disabled) { color: var(--ui-accent); border-color: rgba(23,105,210,.4); background: rgba(23,105,210,.07); box-shadow: 0 7px 16px rgba(23,105,210,.12); transform: translateY(-1px); }
+.admin-content :is(.events-edit,.company-edit,.events-refresh),
+.staff-layout :is(.events-edit,.company-edit,.events-refresh) { transition: transform .2s,box-shadow .2s,border-color .2s,color .2s; }
+.admin-content :is(.events-edit,.company-edit,.events-refresh):hover,
+.staff-layout :is(.events-edit,.company-edit,.events-refresh):hover { transform: translateY(-1px); border-color: rgba(23,105,210,.35); color: var(--ui-accent); box-shadow: 0 6px 14px rgba(23,105,210,.12); }
+
+/* Shared treatment for the rest of the staff workspace's page-specific card variants. */
+.admin-content :is([class*="-summary"] > *,[class*="-metrics"] > *,[class*="-metrics"] article,[class*="-grid"] > article) {
+  transition: transform .3s var(--ui-ease),box-shadow .3s,border-color .3s;
+}
+.admin-content :is([class*="-summary"] > *,[class*="-metrics"] > *,[class*="-metrics"] article,[class*="-grid"] > article):hover {
+  border-color: rgba(23,105,210,.28);
+  box-shadow: var(--ui-shadow-hover);
+  transform: translateY(-3px);
+}
+.admin-content :is(.events-table-card,.companies-card,.dashboard-metric,.dashboard-panel,.checkin-search,.checkin-attendee,.walkin-form,[class*="-ops-card"],[class*="-summary"] > *,[class*="-metrics"] article) { background-color: rgba(255,255,255,.84); backdrop-filter: blur(10px); }
+.admin-content :is(table[class*="table"], [class*="table-wrap"] table, [class*="table-scroll"] table) { border-collapse: collapse; }
+.admin-content :is(table[class*="table"], [class*="table-wrap"] table, [class*="table-scroll"] table) tbody tr { transition: background .2s; }
+.admin-content :is(table[class*="table"], [class*="table-wrap"] table, [class*="table-scroll"] table) tbody tr:hover { background: linear-gradient(90deg,rgba(23,105,210,.065),rgba(56,163,239,.025)); }
+.admin-content :is(table[class*="table"], [class*="table-wrap"] table, [class*="table-scroll"] table) thead th { background: rgba(247,250,255,.94); }
+
+/* Staff authentication pages keep their photographic backdrop with the same blue system accents. */
+.staff-login-card .eyebrow,.password-reset-card .eyebrow { color:#9bc6ff; }
+.login-field input:focus,.pr-field input:focus { border-color:#79b4ff; box-shadow:0 0 0 4px rgba(70,151,255,.24); }
+.login-toggle,.pr-toggle,.password-reset-back { color:#c6e0ff; }
+.login-toggle:hover,.pr-toggle:hover,.password-reset-back:hover { color:#fff; }
+.pr-btn { background:linear-gradient(135deg,#3189e8 0%,#1769d2 50%,#1553b7 100%); box-shadow:0 10px 28px rgba(23,105,210,.4),inset 0 1px 0 rgba(255,255,255,.35); }
+.pr-btn:hover:not(:disabled) { box-shadow:0 16px 36px rgba(23,105,210,.55),inset 0 1px 0 rgba(255,255,255,.45); }
+.pr-btn:active:not(:disabled) { box-shadow:0 6px 16px rgba(23,105,210,.38); }
+
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 40px;
+  padding: 0 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  font: inherit;
+  font-size: .74rem;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .25s var(--ui-ease), box-shadow .25s, background-position .5s, background-color .2s, border-color .2s, color .2s;
+}
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent);
+  transform: skewX(-20deg);
+  transition: left .7s ease;
+  pointer-events: none;
+}
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button:hover:not(:disabled) { transform: translateY(-2px); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button:hover:not(:disabled)::before { left: 130%; }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button:active:not(:disabled) { transform: translateY(0) scale(.97); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button:focus-visible { outline: 3px solid rgba(23,105,210,.4); outline-offset: 2px; }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button:disabled { opacity: .5; cursor: not-allowed; }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--primary { color: #fff; background: linear-gradient(135deg,#3189e8 0%,#1769d2 52%,#1553b7 100%); background-size: 160% 160%; background-position: 0 50%; box-shadow: 0 8px 22px rgba(23,105,210,.32),inset 0 1px 0 rgba(255,255,255,.3); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--primary:hover:not(:disabled) { background-position: 100% 50%; box-shadow: 0 14px 30px rgba(23,105,210,.42),inset 0 1px 0 rgba(255,255,255,.4); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--quiet { color: var(--ui-accent); background: rgba(255,255,255,.78); border-color: var(--ui-line); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--quiet:hover:not(:disabled) { background: rgba(23,105,210,.08); border-color: rgba(23,105,210,.4); box-shadow: 0 8px 18px rgba(23,105,210,.15); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--confirm { color: #fff; background: linear-gradient(135deg,#22b07d,#1f9d6b); box-shadow: 0 8px 20px rgba(31,157,107,.32); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--confirm:hover:not(:disabled) { box-shadow: 0 14px 28px rgba(31,157,107,.45); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--cancel { color: var(--ui-bad); background: #fff; border-color: rgba(214,69,93,.3); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--cancel:hover:not(:disabled) { background: rgba(214,69,93,.08); border-color: var(--ui-bad); box-shadow: 0 8px 18px rgba(214,69,93,.18); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--cancel-solid { color: #fff; background: linear-gradient(135deg,#e5566d,#c93a52); box-shadow: 0 8px 20px rgba(214,69,93,.35); }
+:is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.offline-intro,.offline-filters,.offline-card,.payment-reviews-page,.refunds-toolbar,.refunds-card,.refunds-filters,.payments-toolbar,.payments-card) .button--cancel-solid:hover:not(:disabled) { box-shadow: 0 14px 28px rgba(214,69,93,.5); }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.attendees-toolbar,.attendees-card,.ticket-delivery-intro,.ticket-delivery-card,.ticket-delivery-metrics,.offline-intro,.offline-summary,.offline-card,.payment-reviews-page,.refunds-summary,.refunds-card,.payments-card) *,
+  :is(.attendees-card,.ticket-delivery-card,.offline-card,.payment-review-list,.refunds-card,.payments-card,.dashboard-welcome,.dashboard-shortcuts,.dashboard-metric,.dashboard-panel,.events-table-card,.companies-card,.checkin-search,.checkin-attendee,.walkin-form,.dashboard-table tbody tr,.events-table tbody tr,.companies-table tbody tr) { animation: none !important; transition: none !important; transform: none !important; }
+}

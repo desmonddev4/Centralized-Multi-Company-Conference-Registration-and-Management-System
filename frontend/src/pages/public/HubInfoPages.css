@@ -1,0 +1,71 @@
+/* About, For our companies and Contact — hero comes from PageHero / PublicTheme.css. */
+.hub-info-page { overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+
+.hub-info-intro { padding: clamp(60px, 8vw, 100px) 0; display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: clamp(36px, 7vw, 100px); }
+.hub-info-steps { display: grid; gap: 16px; }
+
+.hub-card {
+  padding: 26px 28px;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: start;
+  gap: 16px;
+  border: 1px solid #fff;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .8);
+  box-shadow: 0 14px 40px rgba(20, 48, 110, .1), inset 0 1px 0 #fff;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  transition: transform .45s var(--pp-ease), box-shadow .45s var(--pp-ease), border-color .3s;
+}
+.hub-card:hover { transform: translateY(-8px); border-color: rgba(21, 89, 232, .35); box-shadow: 0 28px 56px rgba(21, 70, 170, .2), inset 0 1px 0 #fff; }
+.hub-card__num {
+  background: linear-gradient(180deg, #d79f4c, #f3d9a4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--pp-serif);
+  font-size: 1.9rem;
+  font-style: italic;
+  line-height: 1;
+}
+.hub-card h3 { margin: 0 0 8px; font-family: var(--pp-display); font-size: 1.2rem; font-weight: 750; letter-spacing: -.03em; }
+.hub-card p { margin: 0; color: var(--pp-muted); font-size: .98rem; line-height: 1.65; }
+
+/* Dark closing band */
+.hub-band { position: relative; isolation: isolate; overflow: hidden; padding: clamp(60px, 9vw, 100px) 0; background: radial-gradient(circle at 82% 0%, rgba(61, 152, 255, .35), transparent 40%), linear-gradient(120deg, #050f33, #0a2a82 70%, #1559e8); color: #fff; }
+.hub-band::before { content: ''; position: absolute; z-index: -1; right: 12%; top: -170px; width: 420px; height: 420px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 50%; }
+.hub-band__eyebrow { margin: 0 0 14px; color: #8fc4ff; font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.hub-band h2 { max-width: 14em; margin: 0 0 30px; font-family: var(--pp-display); font-size: clamp(2rem, 4.4vw, 3.4rem); font-weight: 800; line-height: 1.04; letter-spacing: -.045em; }
+.hub-band h2 em { background: linear-gradient(180deg, #d79f4c 10%, #f3d9a4 90%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-family: var(--pp-serif); font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+
+/* For our companies */
+.hub-organizer-grid { padding: clamp(60px, 8vw, 100px) 0 clamp(40px, 6vw, 70px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.hub-card--tall { display: block; padding: 34px 30px; }
+.hub-card--tall .hub-card__num { display: block; margin-bottom: 26px; font-size: 2.6rem; }
+.hub-cta { margin-bottom: clamp(64px, 9vw, 110px); padding: clamp(28px, 4vw, 44px); display: flex; align-items: center; justify-content: space-between; gap: 28px; border: 1px solid #dce7f8; border-radius: 28px; background: linear-gradient(130deg, #f5f8ff, #e8f0ff); box-shadow: 0 14px 40px rgba(20, 48, 110, .08); }
+.hub-cta .pp-btn { flex: none; }
+
+/* Contact */
+.hub-contact-grid { padding: clamp(60px, 8vw, 90px) 0 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; max-width: 960px; }
+.hub-card--contact { display: block; min-height: 250px; padding: 34px 32px; }
+.hub-contact-icon { width: 52px; height: 52px; margin-bottom: 24px; display: grid; place-items: center; border-radius: 16px; background: linear-gradient(180deg, #3d98ff, #1b69ff); box-shadow: 0 10px 24px rgba(29, 115, 255, .35); color: #fff; font-size: 1.25rem; font-weight: 800; }
+.hub-card--contact .pp-eyebrow { margin-bottom: 8px; font-size: .72rem; }
+.hub-card--contact > a, .hub-card--contact > strong { display: block; margin-bottom: 12px; color: var(--pp-ink); font-family: var(--pp-display); font-size: 1.35rem; font-weight: 750; letter-spacing: -.02em; overflow-wrap: anywhere; text-decoration: none; }
+.hub-card--contact > a:hover { color: var(--pp-blue); }
+.hub-contact-footer { max-width: 960px; margin-bottom: clamp(64px, 9vw, 110px); padding-top: 26px; display: flex; justify-content: space-between; gap: 18px; border-top: 1px solid var(--pp-line); }
+.hub-contact-footer p { margin: 0; color: var(--pp-muted); }
+.hub-contact-footer a { display: inline-flex; align-items: center; gap: 10px; color: var(--pp-blue); font-weight: 750; text-decoration: none; }
+.hub-contact-footer a span { transition: transform .3s var(--pp-ease); }
+.hub-contact-footer a:hover span { transform: translateX(4px); }
+
+@media (max-width: 860px) {
+  .hub-info-intro { grid-template-columns: 1fr; }
+  .hub-organizer-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .hub-cta { align-items: flex-start; flex-direction: column; }
+  .hub-contact-grid { grid-template-columns: 1fr; }
+  .hub-contact-footer { flex-direction: column; }
+  .hub-card { padding: 22px; }
+}

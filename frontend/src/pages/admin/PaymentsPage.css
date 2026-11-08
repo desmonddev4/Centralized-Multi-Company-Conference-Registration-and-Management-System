@@ -1,1 +1,31 @@
-.payments-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}.payments-toolbar p{color:#77848a;font-size:.78rem}.payments-card{overflow:hidden;border:1px solid #e7ece9;border-radius:10px;background:#fff}.payments-card>header{display:flex;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid #edf0f2}.payments-card h2{margin:0;color:#35434a;font-size:.92rem}.payments-card header p{margin:.3rem 0 0;color:#89949a;font-size:.68rem}.payments-loading{padding:1.2rem;color:#77848a;font-size:.78rem}.payments-table-scroll{overflow:auto}.payments-table{width:100%;border-collapse:collapse;white-space:nowrap}.payments-table th{padding:.75rem 1rem;background:#fafbfa;color:#89949a;font-size:.58rem;letter-spacing:.07em;text-align:left}.payments-table td{padding:.85rem 1rem;border-top:1px solid #f0f2f1;color:#536169;font-size:.72rem}.payments-table code{color:#476b59;font-size:.68rem}.payments-error{padding:.8rem;margin-bottom:1rem;border-radius:7px;color:#99534a;background:#fff2ef;font-size:.75rem}@media(max-width:600px){.payments-toolbar{align-items:flex-start;flex-direction:column}}
+.payments-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  animation: ui-rise 0.5s var(--ui-ease) backwards;
+}
+.payments-toolbar p { margin: 0; color: var(--ui-muted); font-size: 0.82rem; }
+
+.payments-card > header { display: flex; justify-content: space-between; padding: 1.1rem 1.3rem; }
+.payments-card h2 { margin: 0; font-size: 0.95rem; }
+.payments-card header p { margin: 0.3rem 0 0; color: var(--ui-muted); font-size: 0.7rem; }
+.payments-loading { padding: 2.2rem; text-align: center; color: var(--ui-muted); font-size: 0.8rem; }
+
+.payments-table { white-space: nowrap; }
+.payments-table th { padding: 0.8rem 1rem; font-size: 0.58rem; font-weight: 750; letter-spacing: 0.08em; }
+.payments-table td { padding: 0.95rem 1rem; font-size: 0.74rem; }
+.payments-table td:nth-child(3) { color: var(--ui-ink); font-weight: 700; }
+
+.payments-error {
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  color: #a33a4b;
+  background: #fff1f3;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 600px) {
+  .payments-toolbar { align-items: flex-start; flex-direction: column; }
+}

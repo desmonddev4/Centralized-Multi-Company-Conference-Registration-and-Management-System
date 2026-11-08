@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Playfair+Display:ital,wght@1,400;1,500&display=swap');
+
+/* ==========================================================================
+   Public theme — the home-page look (dark stage hero, Bricolage Grotesque
+   headings, gold serif accents, blue pill buttons, frosted cards) shared by
+   every public page. Page-specific CSS builds on these `pp-` primitives.
+   ========================================================================== */
+
+.public-layout {
+  --pp-blue: #1559e8;
+  --pp-blue-light: #3d98ff;
+  --pp-navy: #050f33;
+  --pp-gold: #e7c06a;
+  --pp-ink: #151b2c;
+  --pp-muted: #5f6b82;
+  --pp-line: #e4eaf5;
+  --pp-pale: #f3f6fc;
+  --pp-ease: cubic-bezier(.22, 1, .36, 1);
+  --pp-display: 'Bricolage Grotesque', Inter, ui-sans-serif, system-ui, sans-serif;
+  --pp-serif: 'Playfair Display', Georgia, serif;
+  color: var(--pp-ink);
+}
+.public-layout a:focus-visible,
+.public-layout button:focus-visible,
+.public-layout input:focus-visible,
+.public-layout select:focus-visible,
+.public-layout textarea:focus-visible { outline: 3px solid #60a8ff; outline-offset: 3px; }
+
+@keyframes pp-rise { from { opacity: 0; transform: translate3d(0, 22px, 0); } }
+@keyframes pp-pulse { 70% { box-shadow: 0 0 0 10px rgba(231, 192, 106, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 192, 106, 0); } }
+
+/* ───────── Dark stage hero ───────── */
+.pp-hero {
+  --pp-pad-x: max(24px, calc((100% - 1200px) / 2));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(128px, 18vh, 168px) var(--pp-pad-x) clamp(56px, 9vh, 92px);
+  background: var(--pp-navy);
+  color: #fff;
+  font-family: var(--pp-display);
+}
+.pp-hero::before,
+.pp-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.pp-hero::before { z-index: -2; background: url('/assets/hero-hall.jpg') center / cover; transform: scale(1.04); }
+.pp-hero::after {
+  background:
+    linear-gradient(90deg, rgba(4, 13, 50, .94) 0%, rgba(8, 30, 100, .74) 50%, rgba(6, 22, 72, .42) 100%),
+    linear-gradient(0deg, var(--pp-navy) 0%, transparent 34%);
+}
+.pp-hero--compact { padding-top: clamp(116px, 15vh, 140px); padding-bottom: clamp(48px, 7vh, 72px); }
+.pp-hero > * { animation: pp-rise .8s var(--pp-ease) both; }
+.pp-hero > :nth-child(2) { animation-delay: .08s; }
+.pp-hero > :nth-child(3) { animation-delay: .16s; }
+.pp-hero > :nth-child(4) { animation-delay: .24s; }
+.pp-hero > :nth-child(5) { animation-delay: .32s; }
+
+.pp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 7px 18px 7px 8px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+  color: #8fc4ff;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.pp-tag i { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, .3); border-radius: 50%; }
+.pp-tag i::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--pp-gold); box-shadow: 0 0 0 0 rgba(231, 192, 106, .6); animation: pp-pulse 2.2s infinite; }
+
+.pp-title {
+  max-width: 14em;
+  margin: 24px 0 0;
+  color: #f4f7ff;
+  font-family: var(--pp-display);
+  font-size: clamp(2.4rem, 5.2vw, 4.6rem);
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+.pp-title em {
+  padding-right: .08em;
+  background: linear-gradient(180deg, #d79f4c 10%, #f3d9a4 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--pp-gold);
+  font-family: var(--pp-serif);
+  font-size: 1.06em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -.02em;
+}
+.pp-hero--compact .pp-title { font-size: clamp(2.1rem, 4.2vw, 3.5rem); }
+.pp-lead { max-width: 38em; margin: 20px 0 0; color: #b7c7ea; font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.7; }
+.pp-hero__actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+.pp-hero__meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.pp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 999px;
+  background: rgba(8, 22, 74, .55);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: #e6eeff;
+  font-size: .88rem;
+  font-weight: 650;
+}
+.pp-chip::before { content: ''; width: 7px; height: 7px; flex: none; background: var(--pp-gold); transform: rotate(45deg); }
+
+/* ───────── Layout helpers ───────── */
+.pp-wrap { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+.pp-section { padding: clamp(56px, 8vw, 100px) 0; }
+.pp-eyebrow { display: inline-flex; margin: 0; color: var(--pp-blue); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.pp-heading {
+  margin: 12px 0 0;
+  color: var(--pp-ink);
+  font-family: var(--pp-display);
+  font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+  font-weight: 780;
+  line-height: 1.06;
+  letter-spacing: -.045em;
+}
+.pp-heading em { color: var(--pp-blue); font-family: var(--pp-serif); font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+.pp-sub { max-width: 34em; margin: 12px 0 0; color: var(--pp-muted); line-height: 1.7; }
+
+/* ───────── Buttons ───────── */
+.pp-btn,
+.public-layout .button--dark,
+.public-layout .button--quiet {
+  position: relative;
+  min-height: 54px;
+  padding: 0 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  font-family: var(--pp-display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .3s var(--pp-ease), box-shadow .3s var(--pp-ease), background .25s, border-color .25s, color .25s;
+}
+.pp-btn:hover, .public-layout .button--dark:hover, .public-layout .button--quiet:hover { transform: translateY(-3px); }
+.pp-btn:active, .public-layout .button--dark:active, .public-layout .button--quiet:active { transform: scale(.97); }
+.pp-btn:disabled, .public-layout .button--dark:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.pp-btn > span, .public-layout .button--dark > span { transition: transform .3s var(--pp-ease); }
+.pp-btn:hover > span, .public-layout .button--dark:hover > span { transform: translateX(4px); }
+
+.pp-btn--primary,
+.public-layout .button--dark {
+  background: linear-gradient(180deg, #3d98ff, #1b69ff);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(29, 115, 255, .42), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.pp-btn--primary:hover, .public-layout .button--dark:hover { background: linear-gradient(180deg, #3d98ff, #1b69ff); box-shadow: 0 20px 44px rgba(29, 115, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.pp-btn--ghost {
+  border-color: rgba(255, 255, 255, .26);
+  background: rgba(10, 24, 66, .55);
+  color: #fff;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.pp-btn--ghost:hover { border-color: rgba(255, 255, 255, .6); background: rgba(255, 255, 255, .14); }
+.pp-btn--outline,
+.public-layout .button--quiet { border-color: #cfdcf3; background: rgba(255, 255, 255, .7); color: #27406e; }
+.pp-btn--outline:hover, .public-layout .button--quiet:hover { border-color: var(--pp-blue); background: var(--pp-blue); color: #fff; box-shadow: 0 12px 26px rgba(21, 89, 232, .3); }
+.pp-btn--white { background: #fff; color: var(--pp-blue); box-shadow: 0 10px 24px rgba(5, 25, 80, .22); }
+
+/* ───────── Cards, fields, alerts ───────── */
+.pp-card {
+  position: relative;
+  border: 1px solid #fff;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 18px 54px rgba(20, 48, 110, .12), inset 0 1px 0 #fff;
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+.pp-field { display: grid; gap: 8px; color: #3c4863; font-size: .88rem; font-weight: 650; }
+.pp-field > span { color: #8591a8; font-weight: 500; }
+.pp-field input, .pp-field select, .pp-field textarea {
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid #dbe4f3;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--pp-ink);
+  font-size: .98rem;
+  font-weight: 500;
+  transition: border-color .2s, box-shadow .2s;
+}
+.pp-field input:focus, .pp-field select:focus, .pp-field textarea:focus { border-color: #5d9aff; box-shadow: 0 0 0 4px rgba(21, 89, 232, .12); outline: 0; }
+.pp-field small { color: #8591a8; font-size: .8rem; font-weight: 500; }
+.pp-alert { padding: 14px 18px; border: 1px solid #f3c9c4; border-radius: 14px; background: #fff2f0; color: #a0382d; font-size: .92rem; line-height: 1.5; }
+
+/* ───────── Flow pages: dark stage behind the top of the page ───────── */
+.pp-flow { position: relative; isolation: isolate; padding: clamp(124px, 17vh, 150px) 24px 96px; background: var(--pp-pale); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+.pp-flow::before,
+.pp-flow::after { content: ''; position: absolute; inset: 0 0 auto; height: var(--pp-stage-h, clamp(320px, 44vh, 420px)); z-index: -1; pointer-events: none; }
+.pp-flow::before { z-index: -2; background: var(--pp-navy) url('/assets/hero-hall.jpg') center / cover; }
+.pp-flow::after { background: linear-gradient(90deg, rgba(4, 13, 50, .94) 0%, rgba(8, 30, 100, .72) 55%, rgba(6, 22, 72, .4) 100%), linear-gradient(0deg, rgba(5, 15, 51, .75) 0%, transparent 40%); }
+.pp-flow__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  color: #cfe0ff;
+  font-size: .92rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: color .2s, transform .25s var(--pp-ease);
+}
+.pp-flow .pp-flow__back { color: #cfe0ff; }
+.pp-flow .pp-flow__back:hover { color: #fff; transform: translateX(-3px); }
+.pp-flow .pp-card { background: #fff; }
+
+@media (max-width: 620px) {
+  .pp-wrap { width: calc(100% - 36px); }
+  .pp-hero { --pp-pad-x: 20px; }
+  .pp-tag { font-size: .66rem; letter-spacing: .16em; }
+  .pp-btn, .public-layout .button--dark, .public-layout .button--quiet { min-height: 52px; padding: 0 24px; }
+  .pp-flow { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-hero > *, .pp-hero .pp-tag i::after { animation: none !important; }
+  .pp-btn, .public-layout .button--dark { transition-duration: .01ms; }
+}

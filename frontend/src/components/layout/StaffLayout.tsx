@@ -1,4 +1,6 @@
 ﻿import type { PropsWithChildren } from 'react';
-import StaffNavbar from '../navigation/StaffNavbar';
-import './StaffLayout.css';
-export default function StaffLayout({ children }: PropsWithChildren) { return <div className="staff-layout"><StaffNavbar/><main>{children}</main></div>; }
+import AdminLayout from './AdminLayout';
+type StaffLayoutProps = PropsWithChildren<{ title: string }>;
+export default function StaffLayout({ children, title }: StaffLayoutProps) {
+  return <AdminLayout title={title} eyebrow="EVENT OPERATIONS">{children}</AdminLayout>;
+}

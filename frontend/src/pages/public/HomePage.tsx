@@ -2,11 +2,12 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerE
 import { Link } from 'react-router-dom';
 import PublicLayout from '../../components/layout/PublicLayout';
 import { eventsApi, type AgendaSession, type Conference } from '../../api/events';
+import HomeHero, { AIPIS_STARTS_AT } from './HomeHero';
 import './HomePage.css';
 
 /* Vite serves files from frontend/public at the site root. */
-const HERO_VIDEO = '/assets/hero%20(1).mp4';
-const HERO_POSTER = '/assets/hero-poster.jpg';
+const PROMO_VIDEO = '/assets/aipis-promo%20(1).mp4';
+const PROMO_POSTER = '/assets/aipis-promo-poster.jpg';
 const ABOUT_MAIN = '/assets/about-1.jpeg';
 const ABOUT_SECOND = '/assets/about-2.jpeg';
 
@@ -32,9 +33,9 @@ function formatDate(value: string, options: Intl.DateTimeFormatOptions = { day: 
 function priceLabel(event: Conference) {
   const available = event.ticket_categories.filter((ticket) => ticket.is_active);
   if (!available.length) return 'Registration details coming soon';
-  const amount = Math.min(...available.map((ticket) => ticket.price_minor_units));
+  const amount = Math.min(...available.map((ticket) => ticket.current_price_minor_units));
   if (amount === 0) return 'Free registration';
-  const currency = available.find((ticket) => ticket.price_minor_units === amount)?.currency || 'GHS';
+  const currency = available.find((ticket) => ticket.current_price_minor_units === amount)?.currency || 'GHS';
   return `From ${currency} ${(amount / 100).toFixed(2)}`;
 }
 
@@ -79,13 +80,11 @@ export default function HomePage() {
   const [events, setEvents] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [promoOpen, setPromoOpen] = useState(false);
 
   const pageRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const userPaused = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -101,6 +100,7 @@ export default function HomePage() {
   const sessions = featured?.agenda_sessions || [];
   const speakers = [...new Set(sessions.map((session) => session.speaker_name).filter(Boolean))];
   const tickets = featured?.ticket_categories.filter((ticket) => ticket.is_active) || [];
+  const isAipis = featured?.slug === 'aipis-2027';
 
   /* Scroll progress bar + hero parallax (one rAF-throttled listener) */
   useEffect(() => {
@@ -137,29 +137,18 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [loading, events.length, sessions.length, speakers.length, tickets.length]);
 
-  /* Hero video: respect reduced motion, pause when off-screen to save battery/data */
+  /* Promo modal: close on Escape and lock page scroll while open */
   useEffect(() => {
-    const video = videoRef.current;
-    const hero = heroRef.current;
-    if (!video || !hero) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      video.pause(); userPaused.current = true; setVideoPlaying(false); return;
-    }
-    if (!('IntersectionObserver' in window)) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) video.pause();
-      else if (!userPaused.current) video.play().catch(() => undefined);
-    }, { threshold: 0.05 });
-    observer.observe(hero);
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleVideo = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) { userPaused.current = false; video.play().catch(() => undefined); setVideoPlaying(true); }
-    else { userPaused.current = true; video.pause(); setVideoPlaying(false); }
-  };
+    if (!promoOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPromoOpen(false); };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [promoOpen]);
 
   /* Cursor spotlight on glass cards */
   const onPointerMove = (event: PointerEvent<HTMLElement>) => {
@@ -170,26 +159,11 @@ export default function HomePage() {
     card.style.setProperty('--my', `${event.clientY - rect.top}px`);
   };
 
-  const registerTo = featured ? `/events/${featured.slug}` : '/events';
+  const conferenceDetailsTo = featured ? `/events/${featured.slug}` : '/events';
+  const registerTo = featured ? `${conferenceDetailsTo}/register` : '/events';
 
   return <PublicLayout><div className="home-progress" aria-hidden="true"><div ref={progressRef} /></div><main className="home-page" ref={pageRef} onPointerMove={onPointerMove}>
-    <section className="home-hero" id="top" ref={heroRef}>
-      <div className="home-hero__media" style={{ backgroundImage: `url("${HERO_POSTER}")` }} aria-hidden="true">
-        <video ref={videoRef} className="home-hero__video" src={HERO_VIDEO} poster={HERO_POSTER} autoPlay muted loop playsInline preload="auto" />
-      </div>
-      <div className="home-hero__shade" aria-hidden="true" />
-      <div className="home-hero__content">
-        <p className="home-hero__eyebrow home-rise" style={delay(0, 120)}><span /> CENTRALIZED CONFERENCE EXPERIENCES</p>
-        <p className="home-hero__pretitle home-rise" style={delay(1, 120)}>{featured ? `${featured.company_name} presents` : 'Discover. Connect. Grow.'}</p>
-        <h1 className="home-rise" style={delay(2, 120)}>{featured?.title || <>Big Conference<br />&amp; Workshop</>}</h1>
-        <p className="home-hero__intro home-rise" style={delay(3, 120)}>{featured?.description || 'Bring bold ideas and good people together. Find your next conference, meet inspiring minds and make the connections that move work forward.'}</p>
-        <div className="home-hero__actions home-rise" style={delay(4, 120)}><Link className="home-button home-button--blue" to={registerTo}>Register now <span aria-hidden="true">↗</span></Link><a className="home-button home-button--glass" href="#about">Discover more</a></div>
-        {featured && <div className="home-hero__meta home-rise" style={delay(5, 120)}><span className="home-chip">{formatDate(featured.starts_at)}</span><span className="home-chip">{featured.venue_name || 'Venue to be announced'}</span></div>}
-      </div>
-      <button type="button" className="home-hero__play" onClick={toggleVideo} aria-label={videoPlaying ? 'Pause background video' : 'Play background video'}><span aria-hidden="true">{videoPlaying ? '❚❚' : '▶'}</span></button>
-      <a className="home-hero__scroll" href="#about" aria-label="Scroll to about section"><i /></a>
-      <svg className="home-hero__wave" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true"><path d="M0 34C120 100 210 100 320 57s176-44 284 17 185 53 284 3 168-52 274-2 172 56 278-19v94H0z" fill="currentColor" /></svg>
-    </section>
+    <HomeHero sectionRef={heroRef} featured={featured} isAipis={isAipis} registerTo={registerTo} onOpenPromo={() => setPromoOpen(true)} />
 
     <section className="home-about home-wrap" id="about">
       <div className="home-about__visual" data-reveal="left">
@@ -197,15 +171,15 @@ export default function HomePage() {
         <div className="home-about__photo home-about__photo--main" style={{ backgroundImage: `url("${ABOUT_MAIN}")` }} role="img" aria-label="Opening ceremony on the main stage" />
         <div className="home-about__photo home-about__photo--small" style={{ backgroundImage: `url("${ABOUT_SECOND}")` }} role="img" aria-label="Traditional drummers and dancer performing on stage" />
         <span className="home-about__frame" aria-hidden="true" />
-        <Link className="home-about__play" to={registerTo} aria-label="Explore conference details"><span aria-hidden="true">▶</span></Link>
+        <Link className="home-about__play" to={conferenceDetailsTo} aria-label="Explore conference details"><span aria-hidden="true">↗</span></Link>
       </div>
-      <div className="home-about__copy" data-reveal="right"><span className="home-eyebrow">ABOUT THE EXPERIENCE</span><h2>Know more about<br />the <em>conference.</em></h2><p>{featured?.description || 'A great conference is more than a date on a calendar. It is a chance to share ideas, find fresh perspectives and build relationships that keep growing long after the day ends.'}</p>
-        <div className="home-about__benefit glass"><span className="home-icon">✣</span><div><strong>One place to connect</strong><p>Explore conferences hosted across our companies and register with ease.</p></div></div>
-        <div className="home-about__bottom"><Link className="home-button home-button--blue" to={registerTo}>Register now <span aria-hidden="true">↗</span></Link><span className="home-speaker-stack" aria-label={`${speakers.length} speakers listed`}>{speakers.slice(0, 3).map((speaker) => <span className="home-avatar" key={speaker}>{initials(speaker)}</span>)}<b>{speakers.length ? `+${speakers.length} speakers` : 'Meet the community'}</b></span></div>
+      <div className="home-about__copy" data-reveal="right"><span className="home-eyebrow">{isAipis ? 'ABOUT AIPIS' : 'ABOUT THE CONFERENCE'}</span><h2>{isAipis ? <>Infrastructure that<br />delivers <em>prosperity.</em></> : <>Know more about<br />the <em>conference.</em></>}</h2><p>{isAipis ? 'AIPIS measures African infrastructure by what it delivers: industrial output, jobs and better living standards.' : featured?.description ? `${featured.description.slice(0, 190).trim()}${featured.description.length > 190 ? '…' : ''}` : 'A chance to share ideas, find fresh perspectives and build relationships that keep growing long after the conference.'}</p>
+        {isAipis&&<div className="home-about__outcomes" aria-label="AIPIS outcomes"><span>Industrial output</span><span>Jobs</span><span>Better living standards</span></div>}
+        <div className="home-about__bottom"><Link className="home-button home-button--blue" to={conferenceDetailsTo}>View conference details <span aria-hidden="true">↗</span></Link></div>
       </div>
     </section>
 
-    <section className="home-countdown"><div className="home-countdown__inner" data-reveal><div><span className="home-eyebrow">SAVE YOUR PLACE</span><h2>{featured ? 'Count every second until the event.' : 'Your next great event is closer than you think.'}</h2><Link to={registerTo}>{featured ? 'Get your ticket' : 'Browse events'} <span aria-hidden="true">↗</span></Link></div><Countdown date={featured?.starts_at} /></div></section>
+    <section className="home-countdown"><div className="home-countdown__inner" data-reveal><div><span className="home-eyebrow">SAVE YOUR PLACE</span><h2>{featured ? 'Count every second until the event.' : 'Your next great event is closer than you think.'}</h2><Link to={registerTo}>{featured ? 'Get your ticket' : 'Browse events'} <span aria-hidden="true">↗</span></Link></div><Countdown date={featured?.starts_at ?? AIPIS_STARTS_AT} /></div></section>
 
     <section className="home-section home-section--soft home-features"><div className="home-wrap"><div className="home-section-title home-section-title--center" data-reveal><div><span className="home-eyebrow">EVENT FEATURES</span><h2>Unifying for a better world</h2><p>Everything you need for an experience worth remembering.</p></div></div><div className="home-feature-grid">
       {[['✣', 'Speaker lineup', 'Hear from practitioners and leaders sharing real experience.'], ['♧', 'Networking people', 'Meet peers, exchange perspectives and grow your connections.'], ['◈', 'Engaging keynote', 'Make space for fresh ideas and conversations that matter.'], ['▤', 'Exhibition space', 'Explore products, services and teams shaping what comes next.']].map(([icon, title, description], index) => <article className="home-feature glass" key={title} data-reveal style={delay(index)}><span className="home-feature__icon">{icon}</span><h3>{title}</h3><p>{description}</p></article>)}
@@ -215,17 +189,25 @@ export default function HomePage() {
       {loading ? <div className="home-upcoming__empty" data-reveal>Loading upcoming conferences…</div> : upcoming.length ? <div className="home-upcoming__grid">{upcoming.slice(0, 3).map((event, index) => <article className="home-upcoming-card glass" key={event.id} data-reveal style={delay(index)}><Link to={`/events/${event.slug}`} className="home-upcoming-card__image" aria-label={`View ${event.title}`}><span style={{ backgroundImage: `url("${event.banner_url || conferencePhotos[index + 1]}")` }} /></Link><div className="home-upcoming-card__body"><span>{formatDate(event.starts_at)}</span><h3><Link to={`/events/${event.slug}`}>{event.title}</Link></h3><p>{event.venue_name || 'Venue to be announced'} · {event.company_name}</p><div><strong>{priceLabel(event)}</strong><Link to={`/events/${event.slug}`}>Details <span aria-hidden="true">↗</span></Link></div></div></article>)}</div> : <div className="home-upcoming__empty" data-reveal>{error || 'New events are being planned. Browse the events page for published conferences.'} <Link to="/events">Browse all events ↗</Link></div>}
     </div></section>
 
-    <Schedule sessions={sessions} event={featured} />
+    {sessions.length > 0 && <Schedule sessions={sessions} event={featured} />}
 
-    <section className="home-speaker-banner" id="speakers" style={{ backgroundImage: `linear-gradient(90deg,rgba(14,73,213,.94),rgba(18,91,238,.86)),url("${ABOUT_SECOND}")` }}><div className="home-speaker-banner__inner" data-reveal><span className="home-speaker-banner__spark" aria-hidden="true">✳</span><span className="home-eyebrow">{featured ? featured.company_name : 'THE PEOPLE BEHIND THE IDEAS'}</span><h2>{speakers.length ? 'Meet the voices shaping this event.' : 'Never miss another speaker announcement.'}</h2><p>{speakers.length ? `${speakers.length} ${speakers.length === 1 ? 'speaker is' : 'speakers are'} currently listed in the programme.` : 'Discover upcoming events and be the first to see new programme announcements.'}</p>{featured && speakers.length > 0 && <div className="home-speaker-banner__names">{speakers.slice(0, 4).map((name) => <span key={name}>{name}</span>)}</div>}<Link className="home-button home-button--white" to={registerTo}>{featured ? 'View conference' : 'Explore conferences'} <span aria-hidden="true">↗</span></Link><span className="home-speaker-banner__bubble" aria-hidden="true" /></div></section>
+    {speakers.length > 0 && <section className="home-speaker-banner" id="speakers" style={{ backgroundImage: `linear-gradient(90deg,rgba(14,73,213,.94),rgba(18,91,238,.86)),url("${ABOUT_SECOND}")` }}><div className="home-speaker-banner__inner" data-reveal><span className="home-speaker-banner__spark" aria-hidden="true">✳</span><span className="home-eyebrow">{featured ? featured.company_name : 'THE PEOPLE BEHIND THE IDEAS'}</span><h2>{speakers.length ? 'Meet the voices shaping this event.' : 'Never miss another speaker announcement.'}</h2><p>{speakers.length ? `${speakers.length} ${speakers.length === 1 ? 'speaker is' : 'speakers are'} currently listed in the programme.` : 'Discover upcoming events and be the first to see new programme announcements.'}</p>{featured && speakers.length > 0 && <div className="home-speaker-banner__names">{speakers.slice(0, 4).map((name) => <span key={name}>{name}</span>)}</div>}<Link className="home-button home-button--white" to={conferenceDetailsTo}>{featured ? 'View conference' : 'Explore conferences'} <span aria-hidden="true">↗</span></Link><span className="home-speaker-banner__bubble" aria-hidden="true" /></div></section>}
 
-    {speakers.length > 0 && <section className="home-section"><div className="home-wrap"><div className="home-section-title" data-reveal><div><span className="home-eyebrow">THE PEOPLE ON STAGE</span><h2>Meet our speakers</h2></div><Link className="home-outline-button" to={registerTo}>View programme <span aria-hidden="true">↗</span></Link></div><div className="home-speaker-grid">{speakers.slice(0, 3).map((name, index) => <article className="home-speaker-card glass" key={name} data-reveal style={delay(index)}><div className="home-speaker-card__photo"><span style={{ backgroundImage: `url("${conferencePhotos[(index + 1) % conferencePhotos.length]}")` }} /><b className="home-avatar">{initials(name)}</b></div><h3>{name}</h3><p>Conference speaker</p></article>)}</div></div></section>}
+    {speakers.length > 0 && <section className="home-section"><div className="home-wrap"><div className="home-section-title" data-reveal><div><span className="home-eyebrow">THE PEOPLE ON STAGE</span><h2>Meet our speakers</h2></div><Link className="home-outline-button" to={conferenceDetailsTo}>View programme <span aria-hidden="true">↗</span></Link></div><div className="home-speaker-grid">{speakers.slice(0, 3).map((name, index) => <article className="home-speaker-card glass" key={name} data-reveal style={delay(index)}><div className="home-speaker-card__photo"><span style={{ backgroundImage: `url("${conferencePhotos[(index + 1) % conferencePhotos.length]}")` }} /><b className="home-avatar">{initials(name)}</b></div><h3>{name}</h3><p>Conference speaker</p></article>)}</div></div></section>}
 
-    {!!tickets.length && <section className="home-section home-section--soft home-tickets"><div className="home-wrap"><div className="home-section-title home-section-title--center" data-reveal><div><span className="home-eyebrow">CHOOSE YOUR TICKET</span><h2>Find the right way in.</h2><p>{featured?.title}</p></div></div><div className="home-ticket-grid">{tickets.slice(0, 3).map((ticket, index) => <article className={`home-ticket glass ${index === 1 ? 'home-ticket--featured' : ''}`} key={ticket.id} data-reveal style={delay(index)}><span className="home-ticket__label">{ticket.name}</span><strong>{ticket.price_minor_units === 0 ? 'Free' : `${ticket.currency} ${(ticket.price_minor_units / 100).toFixed(2)}`}</strong><p>{ticket.description || 'Admission to the conference and its scheduled sessions.'}</p><Link to={`/events/${featured!.slug}`}>Get this ticket <span aria-hidden="true">↗</span></Link></article>)}</div></div></section>}
+    {!!tickets.length && <section className="home-section home-section--soft home-tickets"><div className="home-wrap"><div className="home-section-title home-section-title--center" data-reveal><div><span className="home-eyebrow">CHOOSE YOUR TICKET</span><h2>Find the right way in.</h2><p>{featured?.title}</p></div></div><div className="home-ticket-grid">{tickets.map((ticket, index) => <article className={`home-ticket glass ${index === 1 ? 'home-ticket--featured' : ''}`} key={ticket.id} data-reveal style={delay(index)}><span className="home-ticket__label">{ticket.name}</span><strong>{ticket.current_price_minor_units === 0 ? 'Free' : `${ticket.currency} ${(ticket.current_price_minor_units / 100).toFixed(2)}`}</strong>{ticket.early_price_minor_units!==null&&ticket.early_sales_close_at&&<small className="home-ticket__price-note">Standard {ticket.currency} {(ticket.price_minor_units/100).toFixed(2)} · early fee through {new Intl.DateTimeFormat(undefined,{day:'numeric',month:'short'}).format(new Date(ticket.early_sales_close_at))}</small>}<p>{ticket.description || 'Admission to the conference and its scheduled sessions.'}</p><Link to={`/events/${featured!.slug}`}>View ticket details <span aria-hidden="true">↗</span></Link></article>)}</div></div></section>}
 
     <section className="home-section"><div className="home-wrap"><div className="home-section-title" data-reveal><div><span className="home-eyebrow">A LOOK INSIDE</span><h2>Moments worth sharing</h2><p>Good ideas grow when people get together.</p></div><Link className="home-outline-button" to="/events">Explore events <span aria-hidden="true">↗</span></Link></div><div className="home-gallery__grid">{galleryPhotos.map((photo, index) => <div className={`home-gallery__photo home-gallery__photo--${index + 1}`} key={photo} data-reveal="zoom" style={delay(index, 70)}><span style={{ backgroundImage: `url("${photo}")` }} /></div>)}</div></div></section>
 
     <section className="home-final-cta"><div data-reveal="left"><span className="home-eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><h2>Get direction for the event ahead.</h2><p>Find an event, bring your ideas and leave with new connections.</p><Link className="home-button home-button--white" to="/events">Browse conferences <span aria-hidden="true">↗</span></Link></div><div className="home-final-cta__side" data-reveal="right"><span>01</span><strong>Meet.<br />Learn.<br />Move forward.</strong></div></section>
+
+    {promoOpen && <div className="home-modal" role="dialog" aria-modal="true" aria-label="AIPIS 2027 promo video" onClick={() => setPromoOpen(false)}>
+      <div className="home-modal__panel" onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="home-modal__close" onClick={() => setPromoOpen(false)} aria-label="Close video">✕</button>
+        <video src={PROMO_VIDEO} poster={PROMO_POSTER} controls autoPlay playsInline />
+      </div>
+    </div>}
+
     {error && <p className="home-load-note" role="status">{error} {loading ? 'Loading events…' : 'You can still browse the events page.'}</p>}
   </main></PublicLayout>;
 }

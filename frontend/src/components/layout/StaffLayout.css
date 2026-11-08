@@ -1,1 +1,23 @@
-﻿.staff-layout { min-height:100vh; background:#f5f7f8; }.staff-layout main { max-width:960px; margin:auto; padding:2rem 1.25rem; }
+﻿.staff-layout {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(109, 74, 255, 0.13), transparent 60%),
+    radial-gradient(700px 480px at -10% 10%, rgba(59, 130, 246, 0.1), transparent 60%),
+    #f5f6fb;
+}
+
+.staff-layout main {
+  max-width: 960px;
+  margin: auto;
+  padding: 2rem 1.25rem 4rem;
+  animation: staff-enter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+@keyframes staff-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staff-layout main { animation: none; }
+}

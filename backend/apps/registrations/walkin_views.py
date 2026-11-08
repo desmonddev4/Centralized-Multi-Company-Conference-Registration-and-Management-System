@@ -60,9 +60,9 @@ class WalkInRegistrationView(APIView):
         registration = Registration.objects.create(
             ticket_category=category, full_name=data["full_name"], email=data["email"],
             phone=data["phone"], status=Registration.Status.CONFIRMED,
-            amount_due_minor_units=category.price_minor_units, currency=category.currency,
-            payment_method=data["payment_method"] if category.price_minor_units else Registration.PaymentMethod.NONE,
-            payment_received_at=now if category.price_minor_units else None,
+            amount_due_minor_units=category.price_at(now), currency=category.currency,
+            payment_method=data["payment_method"] if category.price_at(now) else Registration.PaymentMethod.NONE,
+            payment_received_at=now if category.price_at(now) else None,
         )
         if registration.amount_due_minor_units and registration.payment_received_at:
             OfflineCollection.objects.create(

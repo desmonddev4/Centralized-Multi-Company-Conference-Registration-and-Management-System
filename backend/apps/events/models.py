@@ -20,6 +20,7 @@ class Conference(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     banner_url = models.URLField(blank=True)
+    registration_url = models.URLField(blank=True)
     venue_name = models.CharField(max_length=180, blank=True)
     venue_address = models.CharField(max_length=300, blank=True)
     starts_at = models.DateTimeField()
@@ -54,6 +55,8 @@ class TicketCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=300, blank=True)
     price_minor_units = models.PositiveBigIntegerField(default=0)
+    early_price_minor_units = models.PositiveBigIntegerField(null=True, blank=True)
+    early_sales_close_at = models.DateTimeField(null=True, blank=True)
     currency = models.CharField(max_length=3, default="GHS")
     quantity_available = models.PositiveIntegerField()
     max_per_registration = models.PositiveSmallIntegerField(default=1)
@@ -75,6 +78,12 @@ class TicketCategory(models.Model):
             Q(status="confirmed") | Q(status="pending_payment", hold_expires_at__gt=now),
         ).count()
         return max(0, self.quantity_available - reserved)
+
+    def price_at(self, moment=None):
+        moment = moment or timezone.now()
+        if self.early_price_minor_units is not None and self.early_sales_close_at and moment <= self.early_sales_close_at:
+            return self.early_price_minor_units
+        return self.price_minor_units
 
     def __str__(self):
         return f"{self.name} — {self.conference.title}"

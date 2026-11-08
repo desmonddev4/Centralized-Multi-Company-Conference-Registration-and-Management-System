@@ -1,3 +1,73 @@
-.event-detail { max-width:1120px; min-height:70vh; margin:auto; padding:2rem 1.5rem 5rem; }.event-back { display:inline-block; margin:0 0 1rem; color:#64756d; font-size:.75rem; text-decoration:none; }.event-detail-hero { min-height:350px; display:flex; align-items:flex-end; padding:clamp(1.5rem,5vw,3.5rem); border-radius:14px; color:#fff; background:radial-gradient(circle at 78% 22%,#efcf92 0 7%,transparent 7.5%),linear-gradient(135deg,#395d4c,#83aa92 65%,#b6ceb9); background-position:center; background-size:cover; }.event-detail-hero>div { max-width:690px; }.event-detail-company { display:inline-block; padding:.4rem .65rem; border:1px solid rgba(255,255,255,.35); border-radius:99px; background:rgba(20,42,33,.38); font-size:.65rem; backdrop-filter:blur(8px); }.event-detail-hero h1 { margin:.8rem 0 .6rem; font-size:clamp(2.5rem,6vw,4rem); line-height:1; letter-spacing:-.07em; }.event-detail-hero p { max-width:620px; margin:0; color:rgba(255,255,255,.84); font-size:.85rem; line-height:1.6; }.event-detail-layout { display:grid; grid-template-columns:minmax(0,1fr) 330px; align-items:start; gap:3rem; padding:2.5rem 1rem; }.event-info-row { display:flex; align-items:center; gap:.9rem; padding:1rem 0; border-bottom:1px solid #edf0f2; }.event-info-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:9px; color:#1559e8; background:#edf6f0; }.event-info-row strong { color:#31404a; font-size:.8rem; }.event-info-row p { margin:.3rem 0 0; color:#839099; font-size:.7rem; }.event-about { max-width:650px; padding:2.5rem 0; }.event-about .eyebrow { color:#1559e8; }.event-about h2 { margin:.6rem 0; font-size:1.7rem; letter-spacing:-.05em; }.event-about>p:last-child { color:#74818a; font-size:.85rem; line-height:1.8; }.event-ticket-card { padding:1.35rem; border:1px solid #e4eae6; border-radius:10px; background:#fff; box-shadow:0 12px 35px rgba(29,53,43,.06); }.event-ticket-card .eyebrow { color:#1559e8; }.event-ticket-card h2 { margin:.3rem 0 1rem; font-size:1.25rem; letter-spacing:-.04em; }.ticket-options { border-top:1px solid #edf0f2; }.ticket-option { display:flex; align-items:center; justify-content:space-between; gap:.8rem; padding:.8rem 0; border-bottom:1px solid #edf0f2; }.ticket-option strong,.ticket-option small { display:block; }.ticket-option strong { color:#34424b; font-size:.76rem; }.ticket-option small { margin-top:.25rem; color:#89959e; font-size:.65rem; }.ticket-option>span { color:#1559e8; font-size:.75rem; font-weight:700; white-space:nowrap; }.event-register { width:100%; margin-top:1rem; text-decoration:none; }.ticket-secure { margin:.8rem 0 0; color:#89959e; font-size:.63rem; line-height:1.5; text-align:center; }.tickets-unavailable { color:#87939b; font-size:.75rem; }.event-detail-loading { min-height:60vh; display:grid; place-items:center; }.event-detail-error { min-height:55vh; max-width:700px; margin:auto; padding:5rem 1.5rem; }.event-detail-error h1 { font-size:2.4rem; letter-spacing:-.06em; }.event-detail-error>p:not(.eyebrow) { margin-bottom:1.5rem; color:#77848c; }
-@media(max-width:800px) { .event-detail-layout { grid-template-columns:1fr; gap:0; padding:1.5rem .25rem; }.event-ticket-card { order:-1; }.event-detail-hero { min-height:320px; } }
-.event-program{padding:1.8rem 0}.event-program>.eyebrow{color:#1559e8}.event-program>h2{margin:.4rem 0 1.1rem;color:#2c3c35;font-size:1.45rem;letter-spacing:-.04em}.event-program-list{display:grid;gap:.7rem}.event-program-list article{display:flex;justify-content:space-between;gap:1.2rem;padding:1rem;border:1px solid #e6ece8;border-radius:9px;background:#fff}.event-program-list article>div>strong{color:#1559e8;font-size:.7rem}.event-program-list h3{margin:.5rem 0 .2rem;color:#34424b;font-size:.9rem}.event-program-list p{margin:.45rem 0 0;color:#74818a;font-size:.72rem;line-height:1.6}.event-program-list p.event-program-speaker{color:#4b6357;font-weight:600}.event-program-list article>span{color:#74818a;font-size:.7rem;white-space:nowrap}
+/* Conference detail + about pages (shared). Hero comes from PageHero / PublicTheme.css. */
+.ev-state { max-width: 640px; margin: 0 auto; padding: clamp(32px, 6vw, 56px); text-align: center; }
+.ev-state h1 { margin: 12px 0 10px; font-family: var(--pp-display); font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -.045em; }
+.ev-state p { color: var(--pp-muted); line-height: 1.65; }
+.ev-state .pp-btn { margin-top: 12px; }
+
+/* Countdown pill in the hero */
+.ev-clock { display: inline-flex; align-items: center; border: 1px solid rgba(255, 255, 255, .2); border-radius: 18px; background: rgba(8, 22, 74, .55); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.ev-clock__label { padding: 0 20px; align-self: stretch; display: grid; align-items: center; border-right: 1px solid rgba(255, 255, 255, .16); color: #b7c7ea; font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.ev-clock > div { min-width: 68px; padding: 11px 10px; display: grid; gap: 5px; text-align: center; }
+.ev-clock > div + div { border-left: 1px dashed rgba(255, 255, 255, .22); }
+.ev-clock strong { color: #fff4dc; font-size: 1.6rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ev-clock > div > span { color: #a9bbe3; font-size: .62rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; }
+
+/* Body */
+.ev-body { padding-bottom: clamp(64px, 9vw, 110px); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+.ev-banner { position: relative; z-index: 2; margin: -40px 0 0; overflow: hidden; border: 1px solid #fff; border-radius: 28px; background: #06180f; box-shadow: 0 30px 80px rgba(20, 48, 110, .25); }
+.ev-banner img { display: block; width: 100%; height: auto; }
+.ev-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; align-items: start; gap: clamp(28px, 4vw, 56px); margin-top: clamp(36px, 5vw, 56px); }
+.ev-main { display: grid; gap: 28px; min-width: 0; }
+
+.ev-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.ev-fact { padding: 22px 24px; display: flex; align-items: flex-start; gap: 16px; border: 1px solid #fff; border-radius: 22px; background: rgba(255, 255, 255, .85); box-shadow: 0 14px 40px rgba(20, 48, 110, .1), inset 0 1px 0 #fff; transition: transform .45s var(--pp-ease), box-shadow .45s var(--pp-ease); }
+.ev-fact:hover { transform: translateY(-6px); box-shadow: 0 26px 54px rgba(21, 70, 170, .18); }
+.ev-fact__icon { width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(180deg, #3d98ff, #1b69ff); box-shadow: 0 10px 22px rgba(29, 115, 255, .32); color: #fff; font-size: 1.15rem; }
+.ev-fact strong { display: block; font-family: var(--pp-display); font-size: 1.08rem; font-weight: 750; letter-spacing: -.02em; line-height: 1.3; }
+.ev-fact p { margin: 5px 0 0; color: var(--pp-muted); font-size: .92rem; line-height: 1.5; }
+.ev-link { width: fit-content; display: inline-flex; align-items: center; gap: 10px; color: var(--pp-blue); font-weight: 750; text-decoration: none; }
+.ev-link span { transition: transform .3s var(--pp-ease); }
+.ev-link:hover span { transform: translateX(5px); }
+
+/* Programme */
+.ev-program__list { display: grid; gap: 16px; margin-top: 26px; }
+.ev-session { padding: 22px 26px; display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; align-items: start; gap: 22px; border: 1px solid #fff; border-radius: 22px; background: rgba(255, 255, 255, .85); box-shadow: 0 12px 34px rgba(20, 48, 110, .09); transition: transform .45s var(--pp-ease), box-shadow .45s var(--pp-ease), border-color .3s; }
+.ev-session:hover { transform: translateY(-5px); border-color: rgba(21, 89, 232, .3); box-shadow: 0 24px 50px rgba(21, 70, 170, .16); }
+.ev-session__time { display: grid; gap: 4px; padding-right: 20px; border-right: 1px dashed #cfdcf3; }
+.ev-session__time strong { background: linear-gradient(180deg, #c58a33, #e1b865); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-family: var(--pp-display); font-size: 1.15rem; font-weight: 800; }
+.ev-session__time span { color: var(--pp-muted); font-size: .85rem; }
+.ev-session__body h3 { margin: 0; font-family: var(--pp-display); font-size: 1.2rem; font-weight: 750; letter-spacing: -.03em; }
+.ev-session__body p { margin: 6px 0 0; color: var(--pp-muted); font-size: .95rem; line-height: 1.6; }
+.ev-session__body .ev-session__speaker { color: var(--pp-blue); font-weight: 700; }
+.ev-session__venue { padding: 7px 14px; border-radius: 999px; background: #edf3ff; color: #27406e; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+
+/* About */
+.ev-about .pp-heading { margin-bottom: 4px; }
+.ev-prose { display: grid; gap: 18px; margin-top: 22px; }
+.ev-prose p { margin: 0; color: #3c4863; font-size: 1.06rem; line-height: 1.85; }
+.ev-prose p:first-child { color: var(--pp-ink); font-size: 1.2rem; font-weight: 500; }
+
+/* Ticket card */
+.ev-ticket-card { position: sticky; top: 110px; padding: 32px 30px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 28px; background: radial-gradient(circle at 90% 0%, rgba(61, 152, 255, .3), transparent 45%), linear-gradient(150deg, #050f33, #0a2a82); box-shadow: 0 30px 70px rgba(5, 15, 51, .4); color: #fff; }
+.ev-ticket-card__eyebrow { margin: 0; color: #8fc4ff; font-size: .74rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+.ev-ticket-card h2 { margin: 10px 0 20px; font-family: var(--pp-display); font-size: 2rem; font-weight: 800; letter-spacing: -.045em; }
+.ev-ticket-card__list { display: grid; gap: 4px; margin: 0 0 24px; padding: 0; list-style: none; }
+.ev-ticket-card__list li { display: flex; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1px dashed rgba(255, 255, 255, .2); color: #d6e1fb; }
+.ev-ticket-card__list strong { color: #fff4dc; font-family: var(--pp-display); font-weight: 800; white-space: nowrap; }
+.ev-ticket-card__button { width: 100%; justify-content: space-between; }
+.ev-ticket-card__empty { padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, .08); color: #d6e1fb; }
+.ev-ticket-card__note { margin: 18px 0 0; color: #9fb2de; font-size: .86rem; line-height: 1.6; }
+
+@media (max-width: 960px) {
+  .ev-layout { grid-template-columns: 1fr; }
+  .ev-ticket-card { position: static; order: -1; }
+}
+@media (max-width: 700px) {
+  .ev-facts { grid-template-columns: 1fr; }
+  .ev-session { grid-template-columns: 1fr; gap: 12px; }
+  .ev-session__time { grid-auto-flow: column; justify-content: start; gap: 8px; padding: 0 0 12px; border-right: 0; border-bottom: 1px dashed #cfdcf3; }
+  .ev-session__time span::before { content: '– '; }
+  .ev-session__venue { width: fit-content; }
+  .ev-clock { flex-wrap: wrap; }
+  .ev-clock__label { padding: 12px 16px; border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, .16); width: 100%; }
+}
