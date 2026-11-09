@@ -87,7 +87,7 @@ export default function HomeHero({ sectionRef, featured, isAipis: isAipisEvent, 
 
       <div className="hero__copy">
         <h1 className="hero__title">
-          {isAipis ? <>From financial close to <em>prosperity</em> close.</> : featured?.title || 'Big conference & workshop'}
+          {isAipis ? 'From financial close to prosperity close.' : featured?.title || 'Big conference & workshop'}
         </h1>
 
         {isAipis && <p className="hero__tagline"><span aria-hidden="true" />Delivering prosperity.</p>}

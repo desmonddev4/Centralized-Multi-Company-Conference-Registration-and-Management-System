@@ -63,20 +63,6 @@
   color: #f4f7ff;
   text-wrap: balance;
 }
-.hero__title em {
-  padding-right: .08em;
-  background: linear-gradient(180deg, #d79f4c 10%, #f3d9a4 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: var(--gold);
-  font-family: var(--serif);
-  font-size: 1.06em;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -.02em;
-}
-
 .hero__tagline {
   display: flex;
   align-items: center;
