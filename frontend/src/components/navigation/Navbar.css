@@ -217,9 +217,8 @@
     transition: transform .5s var(--ease), visibility 0s .5s;
   }
   .public-nav.is-open .public-nav__links { transform: none; visibility: visible; transition: transform .5s var(--ease); }
-  .public-nav__drawer-brand { width: fit-content; min-height: 0; margin: 0 0 18px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; border: 1px solid rgba(255, 255, 255, .88); border-radius: 17px; background: linear-gradient(135deg, #fff 0%, #f1f7ff 100%); box-shadow: 0 5px 18px rgba(4, 21, 61, .2), inset 0 1px 0 #fff; }
+  .public-nav__drawer-brand { width: 54px; height: 54px; min-height: 0; margin: 0 0 18px; padding: 5px; display: grid; place-items: center; color: #fff; text-decoration: none; border: 1px solid rgba(255, 255, 255, .88); border-radius: 16px; background: linear-gradient(135deg, #fff 0%, #f1f7ff 100%); box-shadow: 0 5px 18px rgba(4, 21, 61, .2), inset 0 1px 0 #fff; }
   .public-nav__drawer-brand .brand-emblem { width: 42px; height: 42px; }
-  .public-nav__drawer-brand .brand-wordmark { width: 112px; height: 40px; }
 
   .public-nav__links > a:not(.public-nav__drawer-brand) {
     padding: 15px 18px;

@@ -54,9 +54,7 @@ export default function Navbar() {
 
     <nav className="public-nav__links" id="main-nav" aria-label="Main navigation">
       <Link className="public-nav__drawer-brand" to="/" onClick={close} aria-label={`${settings.platform_name} home`}>
-        <img className="brand-emblem" src="/assets/aipis-emblem.png" alt="" />
-        <img className="brand-wordmark" src="/assets/aipis-wordmark.png" alt="AIPIS" />
-        <span className="brand-year">2027</span>
+        <img className="brand-emblem" src="/assets/aipis-emblem.png" alt="AIPIS" />
       </Link>
       <NavLink to="/" end onClick={close}>Home</NavLink>
       <NavLink to="/events" onClick={close}>Conferences</NavLink>
