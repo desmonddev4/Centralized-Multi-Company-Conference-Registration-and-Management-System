@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from apps.audit.models import AuditEntry
 
@@ -45,5 +45,48 @@ class StaffAndRoleAdminWorkflowTests(APITestCase):
         self.client.force_authenticate(get_user_model().objects.create_user("regular-staff", password="test-pass"))
 
         response = self.client.get("/api/auth/users/")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class CrossOriginCsrfLoginTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            "csrf-owner",
+            "csrf-owner@example.com",
+            "csrf-login-test-password",
+        )
+        self.client = APIClient(enforce_csrf_checks=True)
+
+    def test_login_returns_csrf_token_for_cross_origin_followup_requests(self):
+        session = self.client.get("/api/auth/session/")
+        self.assertEqual(session.status_code, status.HTTP_200_OK)
+        self.assertTrue(session.data["csrf_token"])
+
+        login = self.client.post(
+            "/api/auth/login/",
+            {"username": "csrf-owner", "password": "csrf-login-test-password"},
+            format="json",
+            HTTP_X_CSRFTOKEN=session.data["csrf_token"],
+        )
+        self.assertEqual(login.status_code, status.HTTP_200_OK, login.data)
+        self.assertTrue(login.data["csrf_token"])
+
+        logout = self.client.post(
+            "/api/auth/logout/",
+            {},
+            format="json",
+            HTTP_X_CSRFTOKEN=login.data["csrf_token"],
+        )
+        self.assertEqual(logout.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_login_without_csrf_header_is_rejected(self):
+        self.client.get("/api/auth/session/")
+
+        response = self.client.post(
+            "/api/auth/login/",
+            {"username": "csrf-owner", "password": "csrf-login-test-password"},
+            format="json",
+        )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

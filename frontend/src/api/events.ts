@@ -40,11 +40,12 @@ export type ReportingData = { period:string; conference:string|null; financial_a
    matters: the CSRF and session cookies are not sent between localhost and 127.0.0.1. */
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000/api`).replace(/\/$/, '');
 let platformSettingsCache:Promise<PlatformSettings>|null=null;
+let csrfToken = '';
 function cookie(name: string) { return document.cookie.split('; ').find((item) => item.startsWith(name + '='))?.split('=').slice(1).join('='); }
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.body) headers.set('Content-Type', 'application/json');
-  const csrf = cookie('csrftoken');
+  const csrf = cookie('csrftoken') || csrfToken;
   if (csrf && options.method && options.method !== 'GET') headers.set('X-CSRFToken', decodeURIComponent(csrf));
   const response = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
   if (!response.ok) {
@@ -58,7 +59,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new Error(message);
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const data = await response.json() as T;
+  if (typeof data === 'object' && data !== null && 'csrf_token' in data && typeof data.csrf_token === 'string') {
+    csrfToken = data.csrf_token;
+  }
+  return data;
 }
 export const eventsApi = {
   list(status?: string) { return request<Conference[]>('/events/' + (status ? '?status=' + encodeURIComponent(status) : '')); },
@@ -99,10 +104,10 @@ export const eventsApi = {
 };
 
 export const accountsApi = {
-  session() { return request<{authenticated:boolean;user:StaffUser|null}>('/auth/session/'); },
+  session() { return request<{authenticated:boolean;user:StaffUser|null;csrf_token:string}>('/auth/session/'); },
   requestPasswordReset(email:string) { return request<{detail:string}>('/auth/password-reset/',{method:'POST',body:JSON.stringify({email})}); },
   confirmPasswordReset(uid:string,token:string,password:string) { return request<{detail:string}>('/auth/password-reset/confirm/',{method:'POST',body:JSON.stringify({uid,token,password})}); },
-  login(username:string,password:string) { return request<{authenticated:boolean;user:StaffUser}>('/auth/login/',{method:'POST',body:JSON.stringify({username,password})}); },
+  login(username:string,password:string) { return request<{authenticated:boolean;user:StaffUser;csrf_token:string}>('/auth/login/',{method:'POST',body:JSON.stringify({username,password})}); },
   logout() { return request<void>('/auth/logout/',{method:'POST',body:'{}'}); },
   users() { return request<StaffUser[]>('/auth/users/'); },
   createUser(input:{username:string;email:string;full_name:string;password:string;groups:number[]}) { return request<StaffUser>('/auth/users/',{method:'POST',body:JSON.stringify(input)}); },

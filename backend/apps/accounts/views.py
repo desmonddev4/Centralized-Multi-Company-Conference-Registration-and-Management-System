@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout, pas
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.middleware.csrf import get_token
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth.models import Group, Permission
@@ -49,7 +50,11 @@ class SessionView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request):
-        return Response({"authenticated": request.user.is_authenticated, "user": user_payload(request.user) if request.user.is_authenticated else None})
+        return Response({
+            "authenticated": request.user.is_authenticated,
+            "user": user_payload(request.user) if request.user.is_authenticated else None,
+            "csrf_token": get_token(request),
+        })
 
 
 class LoginInput(serializers.Serializer):
@@ -131,7 +136,7 @@ class LoginView(APIView):
             return Response({"detail": "The username or password is incorrect, or this account has no staff access."}, status=status.HTTP_400_BAD_REQUEST)
         login(request, user)
         record_audit(action="auth.login_succeeded", summary="Staff signed in", request=request, actor=user, target_type="user", target_id=user.pk)
-        return Response({"authenticated": True, "user": user_payload(user)})
+        return Response({"authenticated": True, "user": user_payload(user), "csrf_token": get_token(request)})
 
 
 class LogoutView(APIView):
