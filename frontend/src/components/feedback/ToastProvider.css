@@ -1,0 +1,63 @@
+.toast-stack {
+  position: fixed;
+  z-index: 10000;
+  inset: max(18px, env(safe-area-inset-top)) 20px auto auto;
+  display: grid;
+  gap: 10px;
+  width: min(410px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.app-toast {
+  --toast-accent: #3b73d1;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 28px;
+  align-items: start;
+  gap: 12px;
+  padding: 15px 14px;
+  border: 1px solid #e3e9f1;
+  border-left: 4px solid var(--toast-accent);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .98);
+  box-shadow: 0 16px 44px rgba(19, 35, 58, .17), 0 2px 8px rgba(19, 35, 58, .06);
+  color: #203047;
+  pointer-events: auto;
+  animation: toast-enter .22s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.app-toast--success { --toast-accent: #16845e; }
+.app-toast--error { --toast-accent: #c33f48; }
+.app-toast--warning { --toast-accent: #bd791a; }
+.app-toast--info { --toast-accent: #3b73d1; }
+
+.app-toast__icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--toast-accent) 11%, white);
+  color: var(--toast-accent);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.app-toast__body { min-width: 0; padding-top: 1px; }
+.app-toast__title { display: block; margin: 0 0 3px; color: #17263b; font-size: 13px; font-weight: 750; }
+.app-toast__body p { margin: 0; color: #526176; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.app-toast__close { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: #78869a; cursor: pointer; font-size: 21px; line-height: 1; }
+.app-toast__close:hover { background: #f1f4f8; color: #26364d; }
+
+@keyframes toast-enter {
+  from { opacity: 0; transform: translate3d(0, -8px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (max-width: 600px) {
+  .toast-stack { inset: max(12px, env(safe-area-inset-top)) 12px auto; width: auto; }
+  .app-toast { padding: 13px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-toast { animation: none; }
+}

@@ -36,34 +36,65 @@ export type SystemPermission = { id: number; app: string; codename: string; name
 export type AuditEntry = { id:number; actor_name:string; action:string; target_type:string; target_id:string; summary:string; details:Record<string,unknown>; ip_address:string|null; created_at:string };
 export type ReportingData = { period:string; conference:string|null; financial_access:boolean; summary:{registration_count:number;confirmed_count:number;paid_registration_count:number|null;check_in_count:number;check_in_rate:number;gross_revenue:{currency:string;amount_minor_units:number}[];processed_refunds:{currency:string;amount_minor_units:number}[];net_revenue:{currency:string;amount_minor_units:number}[]};trend:{label:string;registrations:number;check_ins:number}[];upcoming_conferences:{slug:string;title:string;venue_name:string;starts_at:string;registration_count:number}[];conference_performance:{slug:string;title:string;company_name:string;starts_at:string;status:string;registration_count:number;confirmed_count:number;revenue_by_currency:{currency:string;amount_minor_units:number}[]}[];generated_at:string};
 
+import { dispatchToast } from '../components/feedback/ToastProvider';
+
 /* Without an explicit URL the API is assumed to be on the same host as the page (port 8000). Keeping the host identical
    matters: the CSRF and session cookies are not sent between localhost and 127.0.0.1. */
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000/api`).replace(/\/$/, '');
 let platformSettingsCache:Promise<PlatformSettings>|null=null;
 let csrfToken = '';
 function cookie(name: string) { return document.cookie.split('; ').find((item) => item.startsWith(name + '='))?.split('=').slice(1).join('='); }
+function fieldLabel(value: string) { return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()); }
+function readableApiError(body: unknown, status: number) {
+  if (typeof body === 'string') return body;
+  if (!body || typeof body !== 'object') return 'Request failed (' + status + '). Please try again.';
+  const data = body as Record<string, unknown>;
+  if (typeof data.detail === 'string') return data.detail;
+  const issues = Object.entries(data).flatMap(([field, value]) => {
+    const messages = (Array.isArray(value) ? value : [value]).map((item) => typeof item === 'string' ? item : '').filter(Boolean);
+    return messages.map((message) => ({ field, message }));
+  });
+  if (issues.length === 1) {
+    const issue = issues[0];
+    return /^(this field|this value|invalid value)\b/i.test(issue.message)
+      ? fieldLabel(issue.field) + ': ' + issue.message
+      : issue.message;
+  }
+  if (issues.length > 1) return issues.map(({ field, message }) => field === 'non_field_errors' ? message : fieldLabel(field) + ': ' + message).join(' ');
+  return 'Request failed (' + status + '). Please try again.';
+}
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.body) headers.set('Content-Type', 'application/json');
   const csrf = cookie('csrftoken') || csrfToken;
   if (csrf && options.method && options.method !== 'GET') headers.set('X-CSRFToken', decodeURIComponent(csrf));
-  const response = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
+  let response: Response;
+  try {
+    response = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
+  } catch {
+    dispatchToast({ variant: 'error', title: 'Connection problem', message: 'We could not reach the server. Check your connection and try again.' });
+    // The global toast is the user-facing error. Keep local catch blocks silent
+    // so the same failure is not rendered a second time inside the page.
+    throw new Error('');
+  }
   if (!response.ok) {
-    let message = 'Request failed (' + response.status + ')';
-    let diagnosticId = '';
-    let failureCode = '';
+    let body: unknown;
     try {
-      const body = await response.json();
-      if (typeof body === 'string') message = body;
-      else if (body.detail) {
-        message = body.detail;
-        diagnosticId = typeof body.diagnostic_id === 'string' ? body.diagnostic_id : '';
-        failureCode = typeof body.code === 'string' ? body.code : '';
-      }
-      else message = Object.entries(body).map(([key, value]) => key + ': ' + (Array.isArray(value) ? value.join(', ') : String(value))).join(' · ');
+      body = await response.json();
     } catch { /* empty error response */ }
-    if (diagnosticId) message += ' (Code: ' + failureCode + ' · Support reference: ' + diagnosticId + ')';
-    throw new Error(message);
+    const data = body && typeof body === 'object' ? body as Record<string, unknown> : {};
+    const message = readableApiError(body, response.status);
+    const diagnosticId = typeof data.diagnostic_id === 'string' ? data.diagnostic_id : '';
+    const failureCode = typeof data.code === 'string' ? data.code : '';
+    const displayMessage = diagnosticId ? message + ' (Code: ' + failureCode + ' · Support reference: ' + diagnosticId + ')' : message;
+    const isValidation = response.status === 400 && !data.detail;
+    dispatchToast({
+      variant: 'error',
+      title: isValidation ? 'Check your information' : response.status >= 500 ? 'Something went wrong' : 'Could not complete that action',
+      message: displayMessage,
+      duration: diagnosticId ? 10000 : undefined,
+    });
+    throw new Error('');
   }
   if (response.status === 204) return undefined as T;
   const data = await response.json() as T;

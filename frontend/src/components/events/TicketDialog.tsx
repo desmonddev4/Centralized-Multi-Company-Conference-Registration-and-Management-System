@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { eventsApi, type Conference, type TicketCategory } from '../../api/events';
+import { useToast } from '../feedback/ToastProvider';
 import { activeTickets, money, shortDate } from './eventHelpers';
 import './TicketDialog.css';
 
@@ -9,6 +10,7 @@ type Props = { event: Conference; open: boolean; onClose: () => void };
 /* Two-step dialog: choose a ticket, then enter attendee details to reserve a place. */
 export default function TicketDialog({ event, open, onClose }: Props) {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [chosen, setChosen] = useState<TicketCategory | null>(null);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,6 +37,7 @@ export default function TicketDialog({ event, open, onClose }: Props) {
     setSaving(true); setError('');
     try {
       const registration = await eventsApi.register(event.slug, { ticket_category: chosen.id, full_name: fullName, email, phone });
+      showToast({ variant: 'success', title: 'Registration started', message: 'Your attendee details were saved.' });
       navigate('/registrations/' + encodeURIComponent(registration.registration_code));
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Registration could not be completed.'); }
     finally { setSaving(false); }

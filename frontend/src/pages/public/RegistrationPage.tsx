@@ -2,12 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import PublicLayout from '../../components/layout/PublicLayout';
 import { eventsApi, type Conference } from '../../api/events';
+import { useToast } from '../../components/feedback/ToastProvider';
 import { eventRange, money, shortDate } from '../../components/events/eventHelpers';
 import './RegistrationPage.css';
 
 export default function RegistrationPage() {
   const { eventId = '' } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [conference, setConference] = useState<Conference | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState('');
@@ -36,6 +38,7 @@ export default function RegistrationPage() {
     setSaving(true); setError('');
     try {
       const registration = await eventsApi.register(eventId, { ticket_category: Number(selectedTicket), full_name: fullName, email, phone });
+      showToast({ variant: 'success', title: 'Registration started', message: 'Your attendee details were saved.' });
       navigate('/registrations/' + encodeURIComponent(registration.registration_code));
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Registration could not be completed.'); }
     finally { setSaving(false); }
