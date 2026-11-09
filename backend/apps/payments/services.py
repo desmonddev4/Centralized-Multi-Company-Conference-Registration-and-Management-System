@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import logging
 import urllib.error
 import urllib.request
 from urllib.parse import urlencode
@@ -18,6 +19,8 @@ from apps.audit.services import record_audit
 from apps.ticketing.services import issue_ticket_by_id
 from .currency import paystack_charge
 from .models import Payment, Refund, Settlement, SettlementTransaction
+
+logger = logging.getLogger(__name__)
 
 
 class GatewayUnavailable(APIException):
@@ -40,10 +43,24 @@ def paystack_request(path, payload=None, query=None, include_meta=False):
     try:
         with urllib.request.urlopen(request, timeout=12) as response:
             result = json.loads(response.read().decode())
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+    except urllib.error.HTTPError as exc:
+        try:
+            response_data = json.loads(exc.read().decode())
+            provider_message = str(response_data.get("message", "Unknown provider error"))[:300]
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            provider_message = "Provider returned an unreadable error response"
+        logger.error("Paystack returned HTTP %s for %s: %s", exc.code, path, provider_message)
+        raise GatewayUnavailable() from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        logger.error("Could not reach Paystack for %s: %s", path, exc)
+        raise GatewayUnavailable() from exc
+    except json.JSONDecodeError as exc:
+        logger.error("Paystack returned invalid JSON for %s", path)
         raise GatewayUnavailable() from exc
     if not result.get("status"):
-        raise GatewayUnavailable(result.get("message") or "Paystack could not process this request.")
+        provider_message = str(result.get("message") or "Unknown provider error")[:300]
+        logger.error("Paystack rejected %s: %s", path, provider_message)
+        raise GatewayUnavailable("Paystack could not process this request.")
     data = result.get("data", {})
     return (data, result.get("meta", {})) if include_meta else data
 

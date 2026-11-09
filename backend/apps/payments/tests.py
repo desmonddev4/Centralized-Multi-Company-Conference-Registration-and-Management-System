@@ -1,4 +1,7 @@
 from datetime import timedelta
+from io import BytesIO
+import json
+import urllib.error
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -201,6 +204,29 @@ class OnlinePaymentAdminWorkflowTests(APITestCase):
         payment = Payment.objects.get(reference=initialized.data["reference"])
         self.assertEqual(payment.amount_minor_units, 87750)
         self.assertEqual(payment.currency, "GHS")
+
+    @override_settings(PAYSTACK_SECRET_KEY="test-secret")
+    def test_paystack_http_errors_are_logged_without_exposing_provider_details(self):
+        error_body = json.dumps({"status": False, "message": "Invalid test key"}).encode()
+        http_error = urllib.error.HTTPError(
+            "https://api.paystack.co/transaction/initialize",
+            401,
+            "Unauthorized",
+            {},
+            BytesIO(error_body),
+        )
+
+        with patch("apps.payments.services.urllib.request.urlopen", side_effect=http_error):
+            with self.assertLogs("apps.payments.services", level="ERROR") as captured:
+                response = self.client.post(
+                    f"/api/payments/initialize/{self.registration.registration_code}/",
+                    {},
+                    format="json",
+                )
+
+        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertEqual(response.data["detail"], "Payment service is temporarily unavailable. Please try again.")
+        self.assertIn("Invalid test key", captured.output[0])
 
 
 class PaystackRefundCurrencyTests(APITestCase):

@@ -17,3 +17,13 @@
 .checkout-state p { margin: 6px 0 12px; color: var(--pp-muted); }
 .checkout-state a { color: var(--pp-blue); font-weight: 750; }
 @media (max-width: 520px) { .checkout-card { border-radius: 22px; } }
+@media (max-height: 850px) {
+  .checkout-page { padding-block: 104px 48px; }
+  .checkout-back { margin-bottom: 14px; }
+  .checkout-card { padding: clamp(22px, 4vw, 32px); border-radius: 22px; }
+  .checkout-card h1 { margin-block: 8px 10px; }
+  .checkout-summary { margin-block: 18px; }
+  .checkout-summary div { gap: 12px; padding-block: 10px; }
+  .checkout-summary div:last-child dd { font-size: 1.25rem; }
+  .checkout-methods { margin-top: 10px; }
+}
