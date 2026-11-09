@@ -1,4 +1,5 @@
 ﻿from pathlib import Path
+from decimal import Decimal
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,6 +51,7 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localho
 
 REGISTRATION_HOLD_MINUTES = 15
 PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY", default="")
+PAYSTACK_USD_TO_GHS_RATE = Decimal(env("PAYSTACK_USD_TO_GHS_RATE", default="11.7"))
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 PAYSTACK_CALLBACK_URL = env("PAYSTACK_CALLBACK_URL", default="")
 PLATFORM_NAME = env("PLATFORM_NAME", default="ConferenceHub")

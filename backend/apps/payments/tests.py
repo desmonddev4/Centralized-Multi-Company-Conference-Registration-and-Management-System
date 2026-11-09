@@ -2,6 +2,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -174,6 +175,78 @@ class OnlinePaymentAdminWorkflowTests(APITestCase):
         self.assertEqual(payment.paystack_transaction_id, 998877)
         self.assertEqual(self.registration.status, Registration.Status.CONFIRMED)
         self.assertEqual(self.registration.payment_method, Registration.PaymentMethod.PAYSTACK)
+
+    @patch("apps.payments.services.paystack_request")
+    def test_usd_ticket_is_shown_in_both_currencies_and_charged_in_ghs(self, request_paystack):
+        self.registration.currency = "USD"
+        self.registration.save(update_fields=["currency"])
+        request_paystack.return_value = {
+            "authorization_url": "https://checkout.paystack.com/example",
+            "access_code": "access-test",
+        }
+
+        details = self.client.get(f"/api/registration-codes/{self.registration.registration_code}/")
+        initialized = self.client.post(f"/api/payments/initialize/{self.registration.registration_code}/", {}, format="json")
+
+        self.assertEqual(details.status_code, status.HTTP_200_OK)
+        self.assertEqual(details.data["amount_due_minor_units"], 7500)
+        self.assertEqual(details.data["currency"], "USD")
+        self.assertEqual(details.data["paystack_amount_minor_units"], 87750)
+        self.assertEqual(details.data["paystack_currency"], "GHS")
+        self.assertEqual(details.data["paystack_exchange_rate"], "11.7")
+        self.assertEqual(initialized.status_code, status.HTTP_200_OK, initialized.data)
+        request_payload = request_paystack.call_args.args[1]
+        self.assertEqual(request_payload["amount"], 87750)
+        self.assertEqual(request_payload["currency"], "GHS")
+        payment = Payment.objects.get(reference=initialized.data["reference"])
+        self.assertEqual(payment.amount_minor_units, 87750)
+        self.assertEqual(payment.currency, "GHS")
+
+
+class PaystackRefundCurrencyTests(APITestCase):
+    @override_settings(PAYSTACK_SECRET_KEY="test-secret")
+    def test_usd_ticket_refund_uses_the_actual_ghs_charge(self):
+        now = timezone.now()
+        company = Company.objects.create(name="USD Paystack refund company")
+        conference = Conference.objects.create(
+            company=company, title="USD Paystack refund conference",
+            starts_at=now + timedelta(days=10), ends_at=now + timedelta(days=11),
+            status=Conference.Status.PUBLISHED,
+        )
+        ticket = TicketCategory.objects.create(
+            conference=conference, name="USD ticket", quantity_available=5,
+            price_minor_units=75000, currency="USD",
+        )
+        registration = Registration.objects.create(
+            ticket_category=ticket, full_name="Ama Mensah", email="ama@example.com",
+            status=Registration.Status.CONFIRMED, amount_due_minor_units=75000,
+            currency="USD", payment_method=Registration.PaymentMethod.PAYSTACK,
+            payment_received_at=now,
+        )
+        payment = Payment.objects.create(
+            registration=registration, reference="CONF-USD-REFUND",
+            status=Payment.Status.SUCCEEDED, amount_minor_units=877500,
+            currency="GHS", paystack_transaction_id=12345, paid_at=now,
+        )
+        user = get_user_model().objects.create_superuser(
+            username="usd-refund-owner", email="owner@example.com", password="test-password",
+        )
+        self.client.force_authenticate(user)
+
+        with patch("apps.payments.services.paystack_request", return_value={"status": "pending"}) as request_paystack:
+            response = self.client.post("/api/payments/refunds/", {
+                "registration_code": registration.registration_code,
+                "amount_minor_units": 877500,
+                "reason": "Attendee cancellation",
+            }, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        refund = Refund.objects.get(public_id=response.data["public_id"])
+        self.assertEqual(refund.payment, payment)
+        self.assertEqual(refund.amount_minor_units, 877500)
+        self.assertEqual(refund.currency, "GHS")
+        self.assertEqual(request_paystack.call_args.args[1]["currency"], "GHS")
+        self.assertEqual(request_paystack.call_args.args[1]["amount"], 877500)
 
 
 class SettlementAdminWorkflowTests(APITestCase):

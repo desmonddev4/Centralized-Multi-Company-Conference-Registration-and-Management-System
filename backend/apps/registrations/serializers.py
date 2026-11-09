@@ -1,6 +1,8 @@
-﻿from django.db import transaction
+from django.conf import settings
+from django.db import transaction
 from rest_framework import serializers
 from apps.events.models import Conference, TicketCategory
+from apps.payments.currency import paystack_charge
 from .models import Registration
 
 
@@ -90,14 +92,29 @@ class RegistrationLookupSerializer(serializers.ModelSerializer):
     conference_slug = serializers.CharField(source="ticket_category.conference.slug", read_only=True)
     ticket_category_name = serializers.CharField(source="ticket_category.name", read_only=True)
     starts_at = serializers.DateTimeField(source="ticket_category.conference.starts_at", read_only=True)
+    paystack_amount_minor_units = serializers.SerializerMethodField()
+    paystack_currency = serializers.SerializerMethodField()
+    paystack_exchange_rate = serializers.SerializerMethodField()
 
     class Meta:
         model = Registration
         fields = (
             "registration_code", "full_name", "status", "amount_due_minor_units", "currency",
+            "paystack_amount_minor_units", "paystack_currency", "paystack_exchange_rate",
             "hold_expires_at", "created_at", "conference_title", "conference_slug",
             "ticket_category_name", "starts_at",
         )
+
+    def get_paystack_amount_minor_units(self, registration):
+        return paystack_charge(registration.amount_due_minor_units, registration.currency)[0]
+
+    def get_paystack_currency(self, registration):
+        return paystack_charge(registration.amount_due_minor_units, registration.currency)[1]
+
+    def get_paystack_exchange_rate(self, registration):
+        if registration.currency.upper() == "USD":
+            return str(settings.PAYSTACK_USD_TO_GHS_RATE)
+        return None
 
 
 class RegistrationAdminSerializer(RegistrationLookupSerializer):
@@ -115,4 +132,3 @@ class RegistrationAdminSerializer(RegistrationLookupSerializer):
             "company_name", "email", "phone", "job_title", "organization",
             "attendee_role", "payment_method", "payment_received_at",
         )
-

@@ -16,6 +16,7 @@ During Blueprint setup, provide:
 - `FRONTEND_URL`: the public frontend origin, such as `https://your-frontend.example.com`.
 - `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS`: comma-separated frontend origins, including the scheme, for example `https://your-frontend.example.com`. Add every production frontend origin; include `https://` in trusted origins.
 - `PAYSTACK_CALLBACK_URL` and `PAYSTACK_SECRET_KEY` when enabling Paystack checkout.
+- `PAYSTACK_USD_TO_GHS_RATE`: the fixed GHS-per-USD rate for online checkout (defaults to `11.7`). USD ticket prices remain displayed in USD; the checkout shows the GHS conversion, and Paystack receives the charge in GHS.
 - `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `DEFAULT_FROM_EMAIL` for email. The default SMTP port is 587 with TLS enabled; configure a port supported by your provider if deploying on Render's free web plan.
 
 The Blueprint generates `SECRET_KEY`, disables Django debug mode, serves collected Django static files with WhiteNoise, runs database migrations on service startup, and uses the public events API for its health check. If you attach a custom API domain, add that hostname to `ALLOWED_HOSTS` in the Render service environment.

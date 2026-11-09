@@ -16,6 +16,7 @@ from rest_framework.exceptions import APIException, ValidationError
 from apps.registrations.models import Registration
 from apps.audit.services import record_audit
 from apps.ticketing.services import issue_ticket_by_id
+from .currency import paystack_charge
 from .models import Payment, Refund, Settlement, SettlementTransaction
 
 
@@ -91,8 +92,6 @@ def request_refund(*, registration_code, amount_minor_units, reason, actor):
             raise ValidationError({"amount_minor_units": "Refund amount must be greater than zero."})
         totals = Refund.objects.filter(registration=registration, status__in=REFUND_ACTIVE_STATUSES).aggregate(total=Sum("amount_minor_units"))
         already_reserved = totals["total"] or 0
-        if amount + already_reserved > registration.amount_due_minor_units:
-            raise ValidationError({"amount_minor_units": "Refund exceeds the remaining refundable amount."})
         method_map = {
             Registration.PaymentMethod.PAYSTACK: Refund.Method.PAYSTACK,
             Registration.PaymentMethod.CASH: Refund.Method.CASH,
@@ -108,10 +107,17 @@ def request_refund(*, registration_code, amount_minor_units, reason, actor):
             payment = Payment.objects.select_for_update().filter(registration=registration, status=Payment.Status.SUCCEEDED).order_by("-paid_at").first()
             if payment is None:
                 raise ValidationError("No successful Paystack transaction is recorded for this registration.")
+            refundable_amount = payment.amount_minor_units
+            refund_currency = payment.currency
+        else:
+            refundable_amount = registration.amount_due_minor_units
+            refund_currency = registration.currency
+        if amount + already_reserved > refundable_amount:
+            raise ValidationError({"amount_minor_units": "Refund exceeds the remaining refundable amount."})
         refund = Refund.objects.create(
             registration=registration, payment=payment, method=method,
             status=Refund.Status.INITIALIZING if method == Refund.Method.PAYSTACK else Refund.Status.PROCESSED,
-            amount_minor_units=amount, currency=registration.currency, reason=reason.strip()[:300],
+            amount_minor_units=amount, currency=refund_currency, reason=reason.strip()[:300],
             requested_by=actor, completed_by=None if method == Refund.Method.PAYSTACK else actor,
             processed_at=None if method == Refund.Method.PAYSTACK else timezone.now(),
         )
@@ -122,7 +128,7 @@ def request_refund(*, registration_code, amount_minor_units, reason, actor):
         data = paystack_request("/refund", {
             "transaction": payment.paystack_transaction_id or payment.reference,
             "amount": amount,
-            "currency": registration.currency,
+            "currency": payment.currency,
             "customer_note": reason.strip()[:300],
             "merchant_note": reason.strip()[:300],
         })
@@ -201,13 +207,17 @@ def initialize_payment(registration_code):
             raise ValidationError("The ticket reservation has expired. Please register again.")
         if registration.amount_due_minor_units <= 0:
             raise ValidationError("This registration does not require online payment.")
-        existing = Payment.objects.filter(registration=registration, status=Payment.Status.INITIALIZED, authorization_url__gt="").order_by("-created_at").first()
+        amount_minor_units, currency = paystack_charge(registration.amount_due_minor_units, registration.currency)
+        existing = Payment.objects.filter(
+            registration=registration, status=Payment.Status.INITIALIZED,
+            authorization_url__gt="", amount_minor_units=amount_minor_units, currency=currency,
+        ).order_by("-created_at").first()
         if existing:
             return existing
         reference = "CONF-" + __import__("uuid").uuid4().hex
         payment = Payment.objects.create(
             registration=registration, reference=reference,
-            amount_minor_units=registration.amount_due_minor_units, currency=registration.currency,
+            amount_minor_units=amount_minor_units, currency=currency,
         )
         callback = getattr(settings, "PAYSTACK_CALLBACK_URL", "") or getattr(settings, "FRONTEND_URL", "http://localhost:5173").rstrip("/") + "/payment/result"
         data = paystack_request("/transaction/initialize", {

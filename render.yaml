@@ -28,6 +28,8 @@ services:
         sync: false
       - key: PAYSTACK_SECRET_KEY
         sync: false
+      - key: PAYSTACK_USD_TO_GHS_RATE
+        value: "11.7"
       - key: EMAIL_HOST
         sync: false
       - key: EMAIL_HOST_USER
