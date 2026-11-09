@@ -35,7 +35,7 @@
   z-index: -2;
   border: 1px solid rgba(255, 255, 255, .14);
   border-radius: 26px;
-  background: linear-gradient(112deg, rgba(255, 255, 255, .96) 0%, rgba(239, 247, 255, .95) 27%, rgba(45, 100, 192, .9) 48%, rgba(8, 27, 83, .88) 100%);
+  background: linear-gradient(112deg, rgba(25, 72, 151, .94) 0%, rgba(13, 45, 112, .94) 42%, rgba(6, 22, 72, .96) 100%);
   box-shadow: 0 18px 50px rgba(2, 8, 34, .45), inset 0 1px 0 rgba(255, 255, 255, .12);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
@@ -59,7 +59,7 @@
 /* Over light sections the bar needs more body */
 .public-nav.is-scrolled { top: 8px; min-height: 68px; }
 .public-nav.is-scrolled::before {
-  background: linear-gradient(112deg, rgba(255, 255, 255, .98) 0%, rgba(239, 247, 255, .97) 27%, rgba(35, 84, 170, .94) 48%, rgba(5, 20, 68, .94) 100%);
+  background: linear-gradient(112deg, rgba(18, 58, 130, .98) 0%, rgba(9, 35, 96, .98) 42%, rgba(4, 17, 59, .99) 100%);
   box-shadow: 0 18px 48px rgba(2, 8, 34, .5), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 
