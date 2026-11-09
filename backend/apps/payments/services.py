@@ -28,11 +28,17 @@ class GatewayUnavailable(APIException):
     default_detail = "Payment service is temporarily unavailable. Please try again."
     default_code = "payment_gateway_unavailable"
 
+    def __init__(self, detail=None, code=None, diagnostic_id=None):
+        super().__init__(detail or self.default_detail, code or self.default_code)
+        self.failure_code = code or self.default_code
+        self.diagnostic_id = diagnostic_id
 
-def paystack_request(path, payload=None, query=None, include_meta=False):
+
+def paystack_request(path, payload=None, query=None, include_meta=False, diagnostic_id=None):
     secret = getattr(settings, "PAYSTACK_SECRET_KEY", "")
     if not secret:
-        raise GatewayUnavailable("Paystack is not configured. Add PAYSTACK_SECRET_KEY to the backend environment.")
+        logger.error("Payment initialization failed diagnostic_id=%s cause=missing_paystack_secret", diagnostic_id or "none")
+        raise GatewayUnavailable("Payment service is not configured. Please contact support.", "paystack_not_configured", diagnostic_id)
     body = json.dumps(payload).encode() if payload is not None else None
     query_string = "?" + urlencode(query) if query else ""
     request = urllib.request.Request(
@@ -72,20 +78,26 @@ def paystack_request(path, payload=None, query=None, include_meta=False):
             if sensitive_value:
                 body_detail = body_detail.replace(str(sensitive_value), "[redacted]")
         logger.error(
-            "Paystack returned HTTP %s for %s (content-type=%s, server=%s, request-id=%s): %s",
-            exc.code, path, content_type, provider, request_id or "none", body_detail,
+            "Paystack returned HTTP %s for %s diagnostic_id=%s (content-type=%s, server=%s, request-id=%s): %s",
+            exc.code, path, diagnostic_id or "none", content_type, provider, request_id or "none", body_detail,
         )
-        raise GatewayUnavailable() from exc
+        raise GatewayUnavailable(code="paystack_http_error", diagnostic_id=diagnostic_id) from exc
     except (urllib.error.URLError, TimeoutError) as exc:
-        logger.error("Could not reach Paystack for %s: %s", path, exc)
-        raise GatewayUnavailable() from exc
+        logger.error("Could not reach Paystack for %s diagnostic_id=%s error_type=%s", path, diagnostic_id or "none", type(exc).__name__)
+        raise GatewayUnavailable(code="paystack_connection_error", diagnostic_id=diagnostic_id) from exc
     except json.JSONDecodeError as exc:
-        logger.error("Paystack returned invalid JSON for %s", path)
-        raise GatewayUnavailable() from exc
+        logger.error("Paystack returned invalid JSON for %s diagnostic_id=%s", path, diagnostic_id or "none")
+        raise GatewayUnavailable(code="paystack_invalid_response", diagnostic_id=diagnostic_id) from exc
     if not result.get("status"):
         provider_message = str(result.get("message") or "Unknown provider error")[:300]
-        logger.error("Paystack rejected %s: %s", path, provider_message)
-        raise GatewayUnavailable("Paystack could not process this request.")
+        for sensitive_value in (secret, (payload or {}).get("email", ""), (payload or {}).get("reference", "")):
+            if sensitive_value:
+                provider_message = provider_message.replace(str(sensitive_value), "[redacted]")
+        metadata = (payload or {}).get("metadata") or {}
+        if isinstance(metadata, dict) and metadata.get("registration_code"):
+            provider_message = provider_message.replace(str(metadata["registration_code"]), "[redacted]")
+        logger.error("Paystack rejected %s diagnostic_id=%s: %s", path, diagnostic_id or "none", provider_message)
+        raise GatewayUnavailable("Paystack declined the payment request. Please contact support with the diagnostic ID.", "paystack_rejected", diagnostic_id)
     data = result.get("data", {})
     return (data, result.get("meta", {})) if include_meta else data
 
@@ -236,7 +248,7 @@ def sync_settlement_transactions(settlement, *, page=1, per_page=100):
     return meta
 
 
-def initialize_payment(registration_code):
+def initialize_payment(registration_code, diagnostic_id=None):
     with transaction.atomic():
         registration = Registration.objects.select_for_update().select_related("ticket_category").filter(registration_code=registration_code).first()
         if registration is None:
@@ -267,7 +279,7 @@ def initialize_payment(registration_code):
             "currency": payment.currency, "reference": payment.reference,
             "callback_url": callback, "channels": ["card", "mobile_money"],
             "metadata": {"registration_code": registration.registration_code},
-        })
+        }, diagnostic_id=diagnostic_id)
         payment.authorization_url = data.get("authorization_url", "")
         payment.access_code = data.get("access_code", "")
         payment.status = Payment.Status.INITIALIZED

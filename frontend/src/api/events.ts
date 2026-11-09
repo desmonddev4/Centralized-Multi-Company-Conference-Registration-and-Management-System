@@ -50,12 +50,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
   if (!response.ok) {
     let message = 'Request failed (' + response.status + ')';
+    let diagnosticId = '';
+    let failureCode = '';
     try {
       const body = await response.json();
       if (typeof body === 'string') message = body;
-      else if (body.detail) message = body.detail;
+      else if (body.detail) {
+        message = body.detail;
+        diagnosticId = typeof body.diagnostic_id === 'string' ? body.diagnostic_id : '';
+        failureCode = typeof body.code === 'string' ? body.code : '';
+      }
       else message = Object.entries(body).map(([key, value]) => key + ': ' + (Array.isArray(value) ? value.join(', ') : String(value))).join(' · ');
     } catch { /* empty error response */ }
+    if (diagnosticId) message += ' (Code: ' + failureCode + ' · Support reference: ' + diagnosticId + ')';
     throw new Error(message);
   }
   if (response.status === 204) return undefined as T;

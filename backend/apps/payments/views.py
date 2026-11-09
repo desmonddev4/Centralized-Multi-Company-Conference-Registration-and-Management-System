@@ -1,5 +1,7 @@
 import hashlib
 import json
+import logging
+import uuid
 
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -18,15 +20,32 @@ from apps.ticketing.services import issue_ticket_by_id
 from .models import OfflineCollection, PaystackWebhookEvent, Payment, Refund, Settlement, SettlementTransaction
 from .serializers import OfflineCollectionSerializer, PaymentPublicSerializer, PaymentReviewResolveSerializer, PaymentReviewSerializer, RefundSerializer, RefundCreateSerializer, SettlementSerializer, SettlementTransactionSerializer
 from .services import (initialize_payment, valid_webhook_signature, verify_payment, request_refund,
-                       refresh_refund, sync_settlements, sync_settlement_transactions, _refund_status)
+                       refresh_refund, sync_settlements, sync_settlement_transactions, _refund_status,
+                       GatewayUnavailable)
 from apps.audit.services import record_audit
+
+logger = logging.getLogger(__name__)
 
 
 class PaymentInitializeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, registration_code):
-        payment = initialize_payment(registration_code)
+        diagnostic_id = uuid.uuid4().hex[:12]
+        logger.info("Payment initialization request received diagnostic_id=%s", diagnostic_id)
+        try:
+            payment = initialize_payment(registration_code, diagnostic_id=diagnostic_id)
+        except GatewayUnavailable as exc:
+            logger.error(
+                "Payment initialization failed diagnostic_id=%s cause=%s",
+                diagnostic_id, exc.failure_code,
+            )
+            return Response({
+                "detail": str(exc.detail),
+                "code": exc.failure_code,
+                "diagnostic_id": diagnostic_id,
+            }, status=exc.status_code)
+        logger.info("Payment initialization succeeded diagnostic_id=%s", diagnostic_id)
         return Response(PaymentPublicSerializer(payment).data, status=status.HTTP_200_OK)
 
 
