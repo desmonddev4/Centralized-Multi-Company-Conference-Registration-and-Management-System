@@ -35,7 +35,7 @@
   z-index: -2;
   border: 1px solid rgba(255, 255, 255, .14);
   border-radius: 26px;
-  background: linear-gradient(135deg, rgba(8, 24, 84, .78), rgba(10, 30, 100, .56));
+  background: linear-gradient(112deg, rgba(255, 255, 255, .96) 0%, rgba(239, 247, 255, .95) 27%, rgba(45, 100, 192, .9) 48%, rgba(8, 27, 83, .88) 100%);
   box-shadow: 0 18px 50px rgba(2, 8, 34, .45), inset 0 1px 0 rgba(255, 255, 255, .12);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
@@ -59,7 +59,7 @@
 /* Over light sections the bar needs more body */
 .public-nav.is-scrolled { top: 8px; min-height: 68px; }
 .public-nav.is-scrolled::before {
-  background: linear-gradient(135deg, rgba(6, 18, 66, .92), rgba(8, 26, 90, .86));
+  background: linear-gradient(112deg, rgba(255, 255, 255, .98) 0%, rgba(239, 247, 255, .97) 27%, rgba(35, 84, 170, .94) 48%, rgba(5, 20, 68, .94) 100%);
   box-shadow: 0 18px 48px rgba(2, 8, 34, .5), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 
@@ -84,15 +84,20 @@
 .public-nav__brand {
   width: fit-content;
   display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  color: inherit;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px 5px 6px;
+  border: 1px solid rgba(255, 255, 255, .88);
+  border-radius: 17px;
+  background: linear-gradient(135deg, #fff 0%, #f1f7ff 100%);
+  box-shadow: 0 5px 18px rgba(4, 21, 61, .17), inset 0 1px 0 #fff;
   text-decoration: none;
-  transition: transform .35s var(--ease);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
 }
-.public-nav__brand:hover { transform: translateY(-2px); }
-.brand-name { font-size: 1.45rem; font-weight: 800; line-height: 1; letter-spacing: -.05em; }
-.brand-year { color: var(--gold); font-family: var(--serif); font-size: 1.45rem; font-style: italic; font-weight: 400; line-height: 1; letter-spacing: -.03em; }
+.public-nav__brand:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(4, 21, 61, .23), inset 0 1px 0 #fff; }
+.brand-emblem { width: 40px; height: 40px; flex: 0 0 auto; display: block; object-fit: contain; border-radius: 10px; }
+.brand-wordmark { width: 101px; height: 36px; flex: 0 0 auto; display: block; object-fit: contain; }
+.brand-year { color: #9a6c12; font-family: var(--serif); font-size: 1.38rem; font-style: italic; font-weight: 600; line-height: 1; letter-spacing: -.03em; text-shadow: 0 1px 0 rgba(255,255,255,.7); }
 
 /* ───────── Desktop links ───────── */
 .public-nav__links { display: flex; align-items: center; justify-content: center; gap: clamp(2px, .6vw, 8px); }
@@ -212,7 +217,9 @@
     transition: transform .5s var(--ease), visibility 0s .5s;
   }
   .public-nav.is-open .public-nav__links { transform: none; visibility: visible; transition: transform .5s var(--ease); }
-  .public-nav__drawer-brand { min-height: 62px; margin: 0 0 18px; padding: 0 64px 18px 0; display: flex; align-items: baseline; gap: 7px; color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+  .public-nav__drawer-brand { width: fit-content; min-height: 0; margin: 0 0 18px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; border: 1px solid rgba(255, 255, 255, .88); border-radius: 17px; background: linear-gradient(135deg, #fff 0%, #f1f7ff 100%); box-shadow: 0 5px 18px rgba(4, 21, 61, .2), inset 0 1px 0 #fff; }
+  .public-nav__drawer-brand .brand-emblem { width: 42px; height: 42px; }
+  .public-nav__drawer-brand .brand-wordmark { width: 112px; height: 40px; }
 
   .public-nav__links > a:not(.public-nav__drawer-brand) {
     padding: 15px 18px;
@@ -273,7 +280,10 @@
   .public-layout:not(:has(.home-page)) .public-nav { top: 0; left: 0; width: 100%; }
   .public-layout:not(:has(.home-page)) .public-nav::before,
   .public-layout:not(:has(.home-page)) .public-nav::after { border-radius: 0; }
-  .brand-name, .brand-year { font-size: 1.3rem; }
+  .public-nav__brand { gap: 5px; padding: 4px 9px 4px 5px; border-radius: 14px; }
+  .public-nav__brand .brand-emblem { width: 34px; height: 34px; }
+  .public-nav__brand .brand-wordmark { width: 82px; height: 30px; }
+  .public-nav__brand .brand-year { font-size: 1.12rem; }
 }
 
 @keyframes nav-drop { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }

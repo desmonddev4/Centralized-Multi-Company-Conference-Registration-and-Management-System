@@ -47,13 +47,15 @@ export default function Navbar() {
   const close = () => setOpen(false);
   return <header ref={headerRef} onPointerMove={spot} className={`public-nav ${scrolled ? 'is-scrolled' : ''} ${open ? 'is-open' : ''}`}>
     <Link className="public-nav__brand" to="/" aria-label={`${settings.platform_name} home`}>
-      <span className="brand-name">AIPIS</span>
+      <img className="brand-emblem" src="/assets/aipis-emblem.png" alt="" />
+      <img className="brand-wordmark" src="/assets/aipis-wordmark.png" alt="AIPIS" />
       <span className="brand-year">2027</span>
     </Link>
 
     <nav className="public-nav__links" id="main-nav" aria-label="Main navigation">
       <Link className="public-nav__drawer-brand" to="/" onClick={close} aria-label={`${settings.platform_name} home`}>
-        <span className="brand-name">AIPIS</span>
+        <img className="brand-emblem" src="/assets/aipis-emblem.png" alt="" />
+        <img className="brand-wordmark" src="/assets/aipis-wordmark.png" alt="AIPIS" />
         <span className="brand-year">2027</span>
       </Link>
       <NavLink to="/" end onClick={close}>Home</NavLink>
