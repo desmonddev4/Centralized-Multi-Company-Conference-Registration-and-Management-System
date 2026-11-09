@@ -44,12 +44,37 @@ def paystack_request(path, payload=None, query=None, include_meta=False):
         with urllib.request.urlopen(request, timeout=12) as response:
             result = json.loads(response.read().decode())
     except urllib.error.HTTPError as exc:
+        content_type = exc.headers.get("Content-Type", "unknown") if exc.headers else "unknown"
+        provider = exc.headers.get("Server", "unknown") if exc.headers else "unknown"
+        request_id = (
+            (exc.headers.get("CF-Ray") or exc.headers.get("X-Request-Id") or exc.headers.get("Request-Id"))
+            if exc.headers else None
+        )
         try:
-            response_data = json.loads(exc.read().decode())
-            provider_message = str(response_data.get("message", "Unknown provider error"))[:300]
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            provider_message = "Provider returned an unreadable error response"
-        logger.error("Paystack returned HTTP %s for %s: %s", exc.code, path, provider_message)
+            raw_body = exc.read(2048).decode("utf-8", errors="replace")
+        except OSError:
+            raw_body = ""
+        try:
+            response_data = json.loads(raw_body)
+            body_detail = (
+                str(response_data.get("message", "JSON response without a message"))[:300]
+                if isinstance(response_data, dict) else "Provider returned a JSON value without an error message"
+            )
+        except json.JSONDecodeError:
+            body_detail = " ".join(raw_body.split())[:500] or "empty response body"
+        metadata = (payload or {}).get("metadata") or {}
+        for sensitive_value in (
+            secret,
+            (payload or {}).get("email", ""),
+            (payload or {}).get("reference", ""),
+            metadata.get("registration_code", "") if isinstance(metadata, dict) else "",
+        ):
+            if sensitive_value:
+                body_detail = body_detail.replace(str(sensitive_value), "[redacted]")
+        logger.error(
+            "Paystack returned HTTP %s for %s (content-type=%s, server=%s, request-id=%s): %s",
+            exc.code, path, content_type, provider, request_id or "none", body_detail,
+        )
         raise GatewayUnavailable() from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         logger.error("Could not reach Paystack for %s: %s", path, exc)

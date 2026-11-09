@@ -1,6 +1,5 @@
 from datetime import timedelta
 from io import BytesIO
-import json
 import urllib.error
 from unittest.mock import patch
 
@@ -201,18 +200,21 @@ class OnlinePaymentAdminWorkflowTests(APITestCase):
         request_payload = request_paystack.call_args.args[1]
         self.assertEqual(request_payload["amount"], 87750)
         self.assertEqual(request_payload["currency"], "GHS")
+        self.assertEqual(request_payload["email"], self.registration.email)
+        self.assertEqual(request_payload["channels"], ["card", "mobile_money"])
+        self.assertEqual(request_payload["metadata"]["registration_code"], self.registration.registration_code)
         payment = Payment.objects.get(reference=initialized.data["reference"])
         self.assertEqual(payment.amount_minor_units, 87750)
         self.assertEqual(payment.currency, "GHS")
 
     @override_settings(PAYSTACK_SECRET_KEY="test-secret")
     def test_paystack_http_errors_are_logged_without_exposing_provider_details(self):
-        error_body = json.dumps({"status": False, "message": "Invalid test key"}).encode()
+        error_body = b"<html>Access denied for abena@example.com (test-secret)</html>"
         http_error = urllib.error.HTTPError(
             "https://api.paystack.co/transaction/initialize",
-            401,
-            "Unauthorized",
-            {},
+            403,
+            "Forbidden",
+            {"Content-Type": "text/html", "Server": "cloudflare", "CF-Ray": "test-ray-id"},
             BytesIO(error_body),
         )
 
@@ -226,7 +228,12 @@ class OnlinePaymentAdminWorkflowTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertEqual(response.data["detail"], "Payment service is temporarily unavailable. Please try again.")
-        self.assertIn("Invalid test key", captured.output[0])
+        self.assertIn("Access denied", captured.output[0])
+        self.assertIn("HTTP 403", captured.output[0])
+        self.assertIn("text/html", captured.output[0])
+        self.assertIn("test-ray-id", captured.output[0])
+        self.assertNotIn("abena@example.com", captured.output[0])
+        self.assertNotIn("test-secret", captured.output[0])
 
 
 class PaystackRefundCurrencyTests(APITestCase):
