@@ -26,7 +26,6 @@ function formatDateRange(start: string, end?: string) {
 type Props = {
   sectionRef: Ref<HTMLElement>;
   featured?: Conference;
-  isAipis: boolean;
   registerTo: string;
   onOpenPromo: () => void;
 };
@@ -48,35 +47,18 @@ function useCountdown(date?: string) {
   ] as const;
 }
 
-export default function HomeHero({ sectionRef, featured, isAipis: isAipisEvent, registerTo, onOpenPromo }: Props) {
-  /* With no featured event the hero shows the AIPIS 2027 defaults */
-  const isAipis = isAipisEvent || !featured;
-  const startsAt = featured?.starts_at ?? (isAipis ? AIPIS_STARTS_AT : undefined);
-  const clock = useCountdown(startsAt);
-
-  const intro = isAipis
-    ? 'AIPIS measures African infrastructure by what it delivers: industrial output, jobs and better living standards.'
-    : featured?.description
-      ? `${featured.description.slice(0, 150).trim()}${featured.description.length > 150 ? '…' : ''}`
-      : 'Bring bold ideas and good people together. Find your next conference, meet inspiring minds and make the connections that move work forward.';
-  const chips = isAipis ? ['Industrial output', 'Jobs', 'Better living standards'] : ['Keynotes', 'Networking', 'Exhibition'];
-  const tickerItems: { text: string; serif?: boolean }[] = isAipis
-    ? [
-        { text: 'Building infrastructure' },
-        { text: 'Powering industry', serif: true },
-        { text: 'Delivering prosperity' },
-        { text: 'AIPIS 2027 · Ghana', serif: true },
-      ]
-    : [
-        { text: featured?.title || 'Find your next conference' },
-        { text: 'Meet', serif: true },
-        { text: 'Learn' },
-        { text: 'Move forward', serif: true },
-      ];
-
-  const endsAt = featured?.ends_at ?? (isAipis ? AIPIS_ENDS_AT : undefined);
-  const dateText = startsAt ? formatDateRange(startsAt, endsAt) : '';
-  const place = featured?.venue_name || (isAipis ? 'Labadi Beach Hotel · Accra, Ghana' : '');
+export default function HomeHero({ sectionRef, featured, registerTo, onOpenPromo }: Props) {
+  const clock = useCountdown(AIPIS_STARTS_AT);
+  const dateText = formatDateRange(AIPIS_STARTS_AT, AIPIS_ENDS_AT);
+  const place = 'Labadi Beach Hotel · Accra, Ghana';
+  const intro = 'AIPIS measures African infrastructure by what it delivers: industrial output, jobs and better living standards.';
+  const chips = ['Industrial output', 'Jobs', 'Better living standards'];
+  const tickerItems: { text: string; serif?: boolean }[] = [
+    { text: 'Building infrastructure' },
+    { text: 'Powering industry', serif: true },
+    { text: 'Delivering prosperity' },
+    { text: 'AIPIS 2027 · Ghana', serif: true },
+  ];
 
   const registerLabel = <>Register now <span aria-hidden="true">→</span></>;
 
@@ -87,10 +69,10 @@ export default function HomeHero({ sectionRef, featured, isAipis: isAipisEvent, 
 
       <div className="hero__copy">
         <h1 className="hero__title">
-          {isAipis ? 'From financial close to prosperity close.' : featured?.title || 'Big conference & workshop'}
+          From financial close to prosperity close.
         </h1>
 
-        {isAipis && <p className="hero__tagline"><span aria-hidden="true" />Delivering prosperity.</p>}
+        <p className="hero__tagline"><span aria-hidden="true" />Delivering prosperity.</p>
 
         <p className="hero__intro">{intro}</p>
 
@@ -122,11 +104,9 @@ export default function HomeHero({ sectionRef, featured, isAipis: isAipisEvent, 
       <div className="hero__visual">
         <div className="hero__frame">
           <img src={HERO_PHOTO} alt="Keynote speaker on stage in front of a city skyline and bridge" />
-          {isAipis && (
-            <button type="button" className="hero__promo" onClick={onOpenPromo} aria-label="Watch the AIPIS 2027 promo video">
-              <span aria-hidden="true">▶</span> Watch promo
-            </button>
-          )}
+          <button type="button" className="hero__promo" onClick={onOpenPromo} aria-label="Watch the AIPIS 2027 promo video">
+            <span aria-hidden="true">▶</span> Watch promo
+          </button>
         </div>
         {chips.map((chip, index) => <span key={chip} className={`hero__chip hero__chip--${index + 1}`}>{chip}</span>)}
       </div>

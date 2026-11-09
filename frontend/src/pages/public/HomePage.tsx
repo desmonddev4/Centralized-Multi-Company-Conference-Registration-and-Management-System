@@ -163,7 +163,7 @@ export default function HomePage() {
   const registerTo = featured ? `${conferenceDetailsTo}/register` : '/events';
 
   return <PublicLayout><div className="home-progress" aria-hidden="true"><div ref={progressRef} /></div><main className="home-page" ref={pageRef} onPointerMove={onPointerMove}>
-    <HomeHero sectionRef={heroRef} featured={featured} isAipis={isAipis} registerTo={registerTo} onOpenPromo={() => setPromoOpen(true)} />
+    <HomeHero sectionRef={heroRef} featured={featured} registerTo={registerTo} onOpenPromo={() => setPromoOpen(true)} />
 
     <section className="home-about home-wrap" id="about">
       <div className="home-about__visual" data-reveal="left">
