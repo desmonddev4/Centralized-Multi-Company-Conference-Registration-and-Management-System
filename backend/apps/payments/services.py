@@ -43,7 +43,13 @@ def paystack_request(path, payload=None, query=None, include_meta=False, diagnos
     query_string = "?" + urlencode(query) if query else ""
     request = urllib.request.Request(
         "https://api.paystack.co" + path + query_string, data=body,
-        headers={"Authorization": "Bearer " + secret, "Content-Type": "application/json"},
+        headers={
+            "Authorization": "Bearer " + secret,
+            "Content-Type": "application/json",
+            # Paystack recommends a browser-style User-Agent when Cloudflare
+            # blocks server-to-server API calls with error 1010.
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+        },
         method="POST" if body is not None else "GET",
     )
     try:
@@ -81,6 +87,11 @@ def paystack_request(path, payload=None, query=None, include_meta=False, diagnos
             "Paystack returned HTTP %s for %s diagnostic_id=%s (content-type=%s, server=%s, request-id=%s): %s",
             exc.code, path, diagnostic_id or "none", content_type, provider, request_id or "none", body_detail,
         )
+        if "error code: 1010" in body_detail.lower():
+            raise GatewayUnavailable(
+                "Paystack's security layer blocked this server request (Cloudflare 1010). Please contact Paystack support with the diagnostic ID.",
+                "paystack_cloudflare_block", diagnostic_id,
+            ) from exc
         raise GatewayUnavailable(code="paystack_http_error", diagnostic_id=diagnostic_id) from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         logger.error("Could not reach Paystack for %s diagnostic_id=%s error_type=%s", path, diagnostic_id or "none", type(exc).__name__)
