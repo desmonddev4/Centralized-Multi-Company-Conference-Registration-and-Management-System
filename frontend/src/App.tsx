@@ -1,4 +1,4 @@
-﻿import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import HomePage from './pages/public/HomePage';
 import EventsPage from './pages/public/EventsPage';
 import EventDetailPage from './pages/public/EventDetailPage';
@@ -37,6 +37,7 @@ import WalkInRegistrationPage from './pages/staff/WalkInRegistrationPage';
 import CheckInPage from './pages/staff/CheckInPage';
 import CheckInLogPage from './pages/admin/CheckInLogPage';
 import AttendeeKioskPage from './pages/public/AttendeeKioskPage';
+import NotFoundPage from './pages/public/NotFoundPage';
 import RequireStaff from './components/auth/RequireStaff';
 export default function App() { return <Routes>
 <Route element={<RequireStaff><ConferenceOperationsPage/></RequireStaff>} path="/admin/events/:conferenceSlug/operations"/><Route element={<RequireStaff><CompanyOperationsPage/></RequireStaff>} path="/admin/companies/:companyId/operations"/>
@@ -49,4 +50,4 @@ export default function App() { return <Routes>
 <Route path="/" element={<HomePage/>}/><Route path="/about" element={<AboutHubPage/>}/><Route path="/company-hosting" element={<CompanyHostingPage/>}/><Route path="/contact" element={<ContactHubPage/>}/><Route path="/terms" element={<TermsPage/>}/><Route path="/privacy" element={<PrivacyPage/>}/><Route path="/refund-policy" element={<RefundPolicyPage/>}/><Route path="/attend" element={<AttendeeKioskPage/>}/><Route path="/events" element={<EventsPage/>}/><Route path="/events/:eventId" element={<EventDetailPage/>}/><Route path="/events/:eventId/about" element={<EventAboutPage/>}/><Route path="/events/:eventId/register" element={<RegistrationPage/>}/><Route path="/registrations/:registrationCode" element={<RegistrationConfirmationPage/>}/><Route path="/checkout/:registrationCode" element={<CheckoutPage/>}/><Route path="/payment/result" element={<PaymentResultPage/>}/><Route path="/tickets/:registrationCode" element={<TicketPage/>}/>
 <Route path="/login" element={<LoginPage/>}/><Route path="/password-reset" element={<PasswordResetPage/>}/>
 <Route element={<RequireStaff><DashboardPage/></RequireStaff>} path="/admin"/><Route element={<RequireStaff><CompaniesPage/></RequireStaff>} path="/admin/companies"/><Route element={<RequireStaff><EventsAdminPage/></RequireStaff>} path="/admin/events"/><Route element={<RequireStaff><RegistrationsPage/></RequireStaff>} path="/admin/registrations"/><Route element={<RequireStaff><AttendeesPage/></RequireStaff>} path="/admin/attendees"/><Route element={<RequireStaff><PaymentsPage/></RequireStaff>} path="/admin/payments"/><Route element={<RequireStaff><PaymentReviewsPage/></RequireStaff>} path="/admin/payment-reviews"/><Route element={<RequireStaff><RefundsPage/></RequireStaff>} path="/admin/refunds"/><Route element={<RequireStaff><SettlementsPage/></RequireStaff>} path="/admin/settlements"/><Route element={<RequireStaff><ReportsPage/></RequireStaff>} path="/admin/reports"/><Route element={<RequireStaff><UsersPage/></RequireStaff>} path="/admin/users"/><Route element={<RequireStaff><RolesPage/></RequireStaff>} path="/admin/roles"/><Route element={<RequireStaff><AuditLogPage/></RequireStaff>} path="/admin/audit"/><Route element={<RequireStaff><SettingsPage/></RequireStaff>} path="/admin/settings"/>
-<Route element={<RequireStaff><WalkInRegistrationPage/></RequireStaff>} path="/staff/walk-in"/><Route element={<RequireStaff><CheckInPage/></RequireStaff>} path="/staff/check-in"/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>; }
+<Route element={<RequireStaff><WalkInRegistrationPage/></RequireStaff>} path="/staff/walk-in"/><Route element={<RequireStaff><CheckInPage/></RequireStaff>} path="/staff/check-in"/><Route path="*" element={<NotFoundPage/>}/></Routes>; }
